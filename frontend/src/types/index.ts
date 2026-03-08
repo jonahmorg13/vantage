@@ -44,8 +44,7 @@ export interface RecurringTransaction {
 
 export interface MonthBudget {
   monthKey: string
-  grossIncome: number
-  taxRate: number
+  takeHomePay: number
   categories: Category[]
   isLocked: boolean
   createdAt: string
@@ -53,8 +52,7 @@ export interface MonthBudget {
 }
 
 export interface AppSettings {
-  defaultGrossIncome: number
-  defaultTaxRate: number
+  defaultTakeHomePay: number
   categoryTemplates: CategoryTemplate[]
 }
 

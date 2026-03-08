@@ -12,14 +12,14 @@ export function SummaryCards() {
   const totalBudget = month.categories.reduce((a, c) => a + c.budgetAmount, 0)
   const totalSpent = Array.from(spentMap.values()).reduce((a, v) => a + v, 0)
   const totalLeft = totalBudget - totalSpent
-  const unallocated = month.grossIncome - totalBudget
+  const unallocated = month.takeHomePay - totalBudget
 
   return (
     <div className="grid grid-cols-4 gap-5 mb-10 max-[900px]:grid-cols-2">
       <Card accentColor="var(--color-accent)">
         <CardLabel>Total Budget</CardLabel>
         <CardValue>{formatCurrency(totalBudget)}</CardValue>
-        <CardSub>{(totalBudget / month.grossIncome * 100).toFixed(1)}% of gross</CardSub>
+        <CardSub>{(totalBudget / month.takeHomePay * 100).toFixed(1)}% of take-home</CardSub>
       </Card>
 
       <Card accentColor="var(--color-accent4)">
@@ -43,7 +43,7 @@ export function SummaryCards() {
         <CardValue className={unallocated < 0 ? 'text-danger' : 'text-accent4'}>
           {unallocated < 0 ? '-' : ''}{formatCurrency(unallocated)}
         </CardValue>
-        <CardSub>{(unallocated / month.grossIncome * 100).toFixed(1)}% of gross</CardSub>
+        <CardSub>{(unallocated / month.takeHomePay * 100).toFixed(1)}% of take-home</CardSub>
       </Card>
     </div>
   )

@@ -4,8 +4,7 @@ import { nowISO } from '../utils/format'
 export type AppAction =
   | { type: 'SET_MONTH'; monthKey: string }
   | { type: 'INIT_MONTH'; monthKey: string }
-  | { type: 'UPDATE_MONTH_INCOME'; monthKey: string; grossIncome: number }
-  | { type: 'UPDATE_MONTH_TAX_RATE'; monthKey: string; taxRate: number }
+  | { type: 'UPDATE_MONTH_INCOME'; monthKey: string; takeHomePay: number }
   | { type: 'LOCK_MONTH'; monthKey: string }
   // Category actions (per-month)
   | { type: 'ADD_CATEGORY'; monthKey: string; category: Omit<Category, 'id'> }
@@ -22,7 +21,7 @@ export type AppAction =
   | { type: 'UPDATE_RECURRING'; id: number; updates: Partial<RecurringTransaction> }
   | { type: 'DELETE_RECURRING'; id: number }
   // Settings actions
-  | { type: 'UPDATE_SETTINGS'; defaultGrossIncome?: number; defaultTaxRate?: number }
+  | { type: 'UPDATE_SETTINGS'; defaultTakeHomePay?: number }
   | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
@@ -50,8 +49,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
       const newMonth: MonthBudget = {
         monthKey: action.monthKey,
-        grossIncome: state.settings.defaultGrossIncome,
-        taxRate: state.settings.defaultTaxRate,
+        takeHomePay: state.settings.defaultTakeHomePay,
         categories,
         isLocked: false,
         createdAt: now,
@@ -92,17 +90,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         monthBudgets: state.monthBudgets.map(m =>
           m.monthKey === action.monthKey
-            ? { ...m, grossIncome: action.grossIncome, updatedAt: nowISO() }
-            : m
-        ),
-      }
-
-    case 'UPDATE_MONTH_TAX_RATE':
-      return {
-        ...state,
-        monthBudgets: state.monthBudgets.map(m =>
-          m.monthKey === action.monthKey
-            ? { ...m, taxRate: action.taxRate, updatedAt: nowISO() }
+            ? { ...m, takeHomePay: action.takeHomePay, updatedAt: nowISO() }
             : m
         ),
       }
@@ -240,8 +228,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         settings: {
           ...state.settings,
-          ...(action.defaultGrossIncome !== undefined && { defaultGrossIncome: action.defaultGrossIncome }),
-          ...(action.defaultTaxRate !== undefined && { defaultTaxRate: action.defaultTaxRate }),
+          ...(action.defaultTakeHomePay !== undefined && { defaultTakeHomePay: action.defaultTakeHomePay }),
         },
       }
 

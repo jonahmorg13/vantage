@@ -7,8 +7,7 @@ const STORAGE_KEY = 'budget-app-state'
 
 const defaultState: AppState = {
   settings: {
-    defaultGrossIncome: 5416.66,
-    defaultTaxRate: 0.358,
+    defaultTakeHomePay: 3477.50,
     categoryTemplates: [
       { id: 1, name: 'Rent/Housing', color: '#7c6dfa', defaultBudgetAmount: 0, defaultSpendLimit: 0, sortOrder: 0 },
       { id: 2, name: 'Vehicle/Transportation', color: '#fa6d8e', defaultBudgetAmount: 200, defaultSpendLimit: 250, sortOrder: 1 },
@@ -37,11 +36,38 @@ const defaultState: AppState = {
   },
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function migrateState(raw: any): AppState {
+  // Migrate settings: defaultGrossIncome → defaultTakeHomePay
+  const settings = raw.settings ?? {}
+  if (settings.defaultGrossIncome !== undefined && settings.defaultTakeHomePay === undefined) {
+    const gross = settings.defaultGrossIncome
+    const tax = settings.defaultTaxRate ?? 0
+    settings.defaultTakeHomePay = gross * (1 - tax)
+  }
+  delete settings.defaultTaxRate
+  delete settings.defaultGrossIncome
+
+  // Migrate monthBudgets: grossIncome → takeHomePay, remove taxRate
+  const monthBudgets = (raw.monthBudgets ?? []).map((m: any) => {
+    if (m.grossIncome !== undefined && m.takeHomePay === undefined) {
+      const gross = m.grossIncome
+      const tax = m.taxRate ?? 0
+      m.takeHomePay = gross * (1 - tax)
+    }
+    delete m.grossIncome
+    delete m.taxRate
+    return m
+  })
+
+  return { ...raw, settings, monthBudgets } as AppState
+}
+
 function loadState(): AppState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      return JSON.parse(stored) as AppState
+      return migrateState(JSON.parse(stored))
     }
   } catch {
     // ignore parse errors

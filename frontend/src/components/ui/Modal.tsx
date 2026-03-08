@@ -47,7 +47,8 @@ export function FormSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>)
   return (
     <select
       {...props}
-      className={`w-full bg-surface2 border border-border text-text font-mono text-sm px-4 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:border-accent ${props.className ?? ''}`}
+      className={`w-full bg-surface2 border border-border text-text font-mono text-sm pl-4 pr-10 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:border-accent appearance-none ${props.className ?? ''}`}
+      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', ...props.style }}
     />
   )
 }

@@ -21,58 +21,81 @@ export function Sidebar() {
   const remaining = totalBudget - totalSpent;
 
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-surface border-r border-border flex flex-col shrink-0">
-      {/* Logo */}
-      <div className="px-6 py-7 border-b border-border">
-        <h1 className="font-sans text-2xl font-extrabold tracking-tight gradient-text">
-          Vantage
-        </h1>
-        <div className="text-text3 text-xs tracking-[0.15em] uppercase mt-1.5">
-          Personal Finance
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-64 h-screen sticky top-0 bg-surface border-r border-border flex-col shrink-0">
+        {/* Logo */}
+        <div className="px-6 py-7 border-b border-border">
+          <h1 className="font-sans text-2xl font-extrabold tracking-tight gradient-text">
+            Vantage
+          </h1>
+          <div className="text-text3 text-xs tracking-[0.15em] uppercase mt-1.5">
+            Budget Tracking
+          </div>
         </div>
-      </div>
 
-      {/* Month Picker */}
-      <div className="py-5 border-b border-border">
-        <MonthPicker />
-      </div>
+        {/* Month Picker */}
+        <div className="py-5 border-b border-border">
+          <MonthPicker />
+        </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-5">
+        {/* Navigation */}
+        <nav className="flex-1 py-5">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-6 py-3 text-sm transition-all duration-150 ${
+                  isActive
+                    ? "text-accent bg-accent/8 border-r-2 border-accent"
+                    : "text-text2 hover:text-text hover:bg-surface2"
+                }`
+              }>
+              <span className="text-base">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Quick Stats */}
+        <div className="px-6 py-6 pb-8 border-t border-border">
+          <div className="text-xs text-text3 tracking-[0.12em] uppercase mb-3">
+            This Month
+          </div>
+          <div className="flex justify-between text-sm mb-1.5">
+            <span className="text-text3">Spent</span>
+            <span className="text-accent2">{formatCurrency(totalSpent)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-text3">Left</span>
+            <span className={remaining < 0 ? "text-danger" : "text-accent3"}>
+              {formatCurrency(remaining)}
+            </span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border flex items-stretch">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === "/"}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-6 py-3 text-sm transition-all duration-150 ${
+              `flex flex-col items-center justify-center flex-1 py-2 gap-1 text-xs transition-all duration-150 ${
                 isActive
-                  ? "text-accent bg-accent/8 border-r-2 border-accent"
-                  : "text-text2 hover:text-text hover:bg-surface2"
+                  ? "text-accent"
+                  : "text-text3 hover:text-text"
               }`
             }>
-            <span className="text-base">{item.icon}</span>
-            {item.label}
+            <span className="text-lg">{item.icon}</span>
+            <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>
-
-      {/* Quick Stats */}
-      <div className="px-6 py-6 pb-8 border-t border-border">
-        <div className="text-xs text-text3 tracking-[0.12em] uppercase mb-3">
-          This Month
-        </div>
-        <div className="flex justify-between text-sm mb-1.5">
-          <span className="text-text3">Spent</span>
-          <span className="text-accent2">{formatCurrency(totalSpent)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-text3">Left</span>
-          <span className={remaining < 0 ? "text-danger" : "text-accent3"}>
-            {formatCurrency(remaining)}
-          </span>
-        </div>
-      </div>
-    </aside>
+    </>
   );
 }

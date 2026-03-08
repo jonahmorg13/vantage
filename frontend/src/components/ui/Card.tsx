@@ -27,7 +27,7 @@ export function CardLabel({ children }: { children: ReactNode }) {
 
 export function CardValue({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`font-sans text-3xl font-bold tracking-tight ${className}`}>
+    <div className={`font-sans text-xl md:text-3xl font-bold tracking-tight truncate ${className}`}>
       {children}
     </div>
   )

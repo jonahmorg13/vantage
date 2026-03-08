@@ -1,5 +1,5 @@
 interface StatusPillProps {
-  status: 'ok' | 'warn' | 'over' | 'none'
+  status: 'ok' | 'warn' | 'over' | 'full' | 'none'
 }
 
 export function StatusPill({ status }: StatusPillProps) {
@@ -7,6 +7,7 @@ export function StatusPill({ status }: StatusPillProps) {
     ok: 'bg-success/12 text-success',
     warn: 'bg-warning/12 text-warning',
     over: 'bg-danger/12 text-danger animate-pulse-status',
+    full: 'bg-accent/12 text-accent',
     none: 'bg-white/5 text-text3',
   }
 
@@ -14,6 +15,7 @@ export function StatusPill({ status }: StatusPillProps) {
     ok: '✓ OK',
     warn: '~ Near',
     over: '⚠ OVER',
+    full: '◼ Maxed',
     none: '—',
   }
 

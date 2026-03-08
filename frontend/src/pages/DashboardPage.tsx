@@ -1,6 +1,6 @@
 import { useCurrentMonth } from '../hooks/useMonthBudget'
 import { useAppContext } from '../context/AppContext'
-import { formatCurrency, formatMonthDisplay } from '../utils/format'
+import { formatMonthDisplay } from '../utils/format'
 import { AlertsBanner } from '../components/dashboard/AlertsBanner'
 import { SummaryCards } from '../components/dashboard/SummaryCards'
 import { AllocationChart } from '../components/dashboard/AllocationChart'
@@ -12,37 +12,35 @@ export function DashboardPage() {
 
   if (!month) return null
 
-  const net = month.grossIncome * (1 - month.taxRate)
-
   return (
     <div>
       {/* Header */}
       <div className="flex items-start justify-between mb-10 gap-6 flex-wrap">
         <div>
-          <h1 className="font-sans text-4xl font-extrabold tracking-tight gradient-text">
-            Budget Tracker
+          <h1 className="font-sans text-2xl md:text-4xl font-extrabold tracking-tight gradient-text">
+            Dashboard
           </h1>
           <div className="text-text3 text-sm tracking-[0.15em] uppercase mt-2">
-            {formatMonthDisplay(state.currentMonthKey)} · Personal Finance
+            {formatMonthDisplay(state.currentMonthKey)} · Budget Tracking
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
           <div className="text-xs text-text3 tracking-[0.12em] uppercase">
-            Monthly Gross Income
+            Monthly Take-Home Pay
           </div>
-          <input
-            type="number"
-            className="bg-surface2 border border-border text-text font-mono text-2xl font-medium px-4 py-2.5 rounded-lg w-48 text-right transition-colors focus:outline-none focus:border-accent"
-            value={month.grossIncome}
-            step="0.01"
-            onChange={e => dispatch({
-              type: 'UPDATE_MONTH_INCOME',
-              monthKey: state.currentMonthKey,
-              grossIncome: parseFloat(e.target.value) || 0,
-            })}
-          />
-          <div className="text-sm text-text2">
-            Net (after tax): <span className="text-accent3 font-medium">{formatCurrency(net)}</span>
+          <div className="relative w-full md:w-auto">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text3 font-mono text-2xl font-medium pointer-events-none">$</span>
+            <input
+              type="number"
+              className="bg-surface2 border border-border text-text font-mono text-2xl font-medium pl-9 pr-4 py-2.5 rounded-lg w-full md:w-52 text-right transition-colors focus:outline-none focus:border-accent"
+              value={month.takeHomePay.toFixed(2)}
+              step="0.01"
+              onChange={e => dispatch({
+                type: 'UPDATE_MONTH_INCOME',
+                monthKey: state.currentMonthKey,
+                takeHomePay: parseFloat(e.target.value) || 0,
+              })}
+            />
           </div>
         </div>
       </div>

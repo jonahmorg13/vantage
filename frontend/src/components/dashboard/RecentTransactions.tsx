@@ -34,12 +34,12 @@ export function RecentTransactions() {
                 className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] hover:bg-accent/[0.04] transition-colors animate-fade-in max-[900px]:grid-cols-[130px_1fr_100px]"
               >
                 <div>
-                  <span className="inline-flex items-center gap-2 text-xs text-text2 bg-surface2 px-2.5 py-1 rounded border border-border">
+                  <span className="inline-flex items-center gap-2 text-xs text-text2 bg-surface2 px-2.5 py-1 rounded border border-border max-w-full overflow-hidden">
                     <span
-                      className="inline-block w-2 h-2 rounded-full"
+                      className="inline-block w-2 h-2 rounded-full shrink-0"
                       style={{ background: cat?.color ?? '#555' }}
                     />
-                    {cat?.name ?? 'Unknown'}
+                    <span className="truncate">{cat?.name ?? 'Unknown'}</span>
                   </span>
                 </div>
                 <div className="text-sm text-text">{tx.name}</div>
