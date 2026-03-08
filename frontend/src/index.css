@@ -1,0 +1,115 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0f;
+  --color-surface: #131320;
+  --color-surface2: #1a1a2e;
+  --color-surface3: #252538;
+  --color-border: #33334a;
+  --color-accent: #7c6dfa;
+  --color-accent-hover: #9585fc;
+  --color-accent2: #fa6d8e;
+  --color-accent3: #6dfab0;
+  --color-accent4: #fac86d;
+  --color-text: #e8e8f0;
+  --color-text2: #8888a8;
+  --color-text3: #555568;
+  --color-danger: #ff4d6d;
+  --color-danger-hover: #ff6b85;
+  --color-warning: #ffb347;
+  --color-success: #4dffb4;
+
+  --font-mono: "DM Mono", monospace;
+  --font-sans: "Syne", sans-serif;
+}
+
+@layer base {
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid effect */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124, 109, 250, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 109, 250, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Select option styling */
+  select option {
+    background: var(--color-surface2);
+  }
+}
+
+@layer components {
+  /* Gradient text utility */
+  .gradient-text {
+    background: linear-gradient(135deg, #fff 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Card top accent bar */
+  .card-accent::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color, var(--color-accent)), transparent);
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-surface);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 2px;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.25s ease;
+  }
+  .animate-pulse-status {
+    animation: pulse-status 1.5s infinite;
+  }
+}
+
+/* Animations (keyframes must be outside layers) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulse-status {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

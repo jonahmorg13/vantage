@@ -1,0 +1,128 @@
+# ============================================================
+# GENERAL
+# ============================================================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+# ============================================================
+# FRONTEND — React / TypeScript / Tailwind
+# ============================================================
+
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Build output
+frontend/dist/
+frontend/build/
+frontend/out/
+
+# Cache & tooling
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.turbo/
+frontend/.eslintcache
+frontend/.stylelintcache
+frontend/tsconfig.tsbuildinfo
+
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Test output
+frontend/coverage/
+
+# Misc
+frontend/.next/
+frontend/.nuxt/
+frontend/storybook-static/
+
+
+# ============================================================
+# BACKEND — ASP.NET Core
+# ============================================================
+
+# Build output
+backend/bin/
+backend/obj/
+
+# User-specific files
+backend/*.rsuser
+backend/*.suo
+backend/*.user
+backend/*.userosscache
+backend/*.sln.docstates
+backend/.vs/
+
+# NuGet
+backend/*.nupkg
+backend/*.snupkg
+backend/**/[Pp]ackages/
+backend/!**/[Pp]ackages/build/
+backend/*.nuget.props
+backend/*.nuget.targets
+backend/project.lock.json
+backend/project.fragment.lock.json
+
+# Environment / secrets
+backend/appsettings.Development.json
+backend/appsettings.Local.json
+backend/**/*.pfx
+backend/**/*.p12
+backend/**/*.key
+backend/secrets.json
+backend/**/secrets.json
+
+# Publish output
+backend/publish/
+backend/**/publish/
+
+# Entity Framework migrations (keep if you version these; remove if not)
+# backend/**/Migrations/
+
+# Test output
+backend/TestResults/
+backend/coverage/
+
+# Rider / JetBrains
+backend/.idea/
+backend/**/.idea/
+
+# Roslyn / Analyzers cache
+backend/.cr/
+
+
+# ============================================================
+# DOCKER (if added later)
+# ============================================================
+.dockerignore
+
+
+# ============================================================
+# CI / SECRETS (safety net across the whole repo)
+# ============================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+*.cer
