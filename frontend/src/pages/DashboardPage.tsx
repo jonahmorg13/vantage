@@ -26,7 +26,7 @@ export function DashboardPage() {
         </div>
         <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
           <div className="text-xs text-text3 tracking-[0.12em] uppercase">
-            Monthly Take-Home Pay
+            Take-Home Pay
           </div>
           <div className="relative w-full md:w-auto">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text3 font-mono text-2xl font-medium pointer-events-none">$</span>

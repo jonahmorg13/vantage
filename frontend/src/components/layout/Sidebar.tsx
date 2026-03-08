@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { MonthPicker } from "./MonthPicker";
 import { useCurrentMonth } from "../../hooks/useMonthBudget";
 import { useSpentByCategory } from "../../hooks/useTransactions";
@@ -9,18 +10,47 @@ const navItems = [
   { to: "/transactions", label: "Transactions", icon: "⇄" },
   { to: "/categories", label: "Categories", icon: "▦" },
   { to: "/accounts", label: "Accounts", icon: "◈" },
+];
+
+const overflowItems = [
   { to: "/future", label: "Future", icon: "∿" },
   { to: "/settings", label: "Settings", icon: "⚙" },
 ];
 
+const allNavItems = [...navItems, ...overflowItems];
+
 export function Sidebar() {
   const month = useCurrentMonth();
   const spentMap = useSpentByCategory();
+  const location = useLocation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
 
   const totalBudget =
     month?.categories.reduce((a, c) => a + c.budgetAmount, 0) ?? 0;
   const totalSpent = Array.from(spentMap.values()).reduce((a, v) => a + v, 0);
   const remaining = totalBudget - totalSpent;
+
+  // Close overflow menu on route change
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [location.pathname]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!moreOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [moreOpen]);
+
+  const isOverflowActive = overflowItems.some(
+    (item) => location.pathname === item.to
+  );
 
   return (
     <>
@@ -43,7 +73,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 py-5">
-          {navItems.map((item) => (
+          {allNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -87,16 +117,45 @@ export function Sidebar() {
             to={item.to}
             end={item.to === "/"}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center flex-1 py-2 gap-1 text-xs transition-all duration-150 ${
-                isActive
-                  ? "text-accent"
-                  : "text-text3 hover:text-text"
+              `flex items-center justify-center flex-1 py-3 transition-all duration-150 ${
+                isActive ? "text-accent" : "text-text3 hover:text-text"
               }`
             }>
-            <span className="text-lg">{item.icon}</span>
-            <span>{item.label}</span>
+            <span className="text-2xl">{item.icon}</span>
           </NavLink>
         ))}
+
+        {/* More button */}
+        <div ref={moreRef} className="flex items-center justify-center flex-1 relative">
+          <button
+            onClick={() => setMoreOpen((v) => !v)}
+            className={`flex items-center justify-center w-full py-3 transition-all duration-150 ${
+              isOverflowActive || moreOpen ? "text-accent" : "text-text3"
+            }`}>
+            <span className="text-2xl leading-none tracking-widest">···</span>
+          </button>
+
+          {/* Overflow popup */}
+          {moreOpen && (
+            <div className="absolute bottom-full mb-2 right-0 w-44 bg-surface border border-border rounded-xl shadow-xl overflow-hidden">
+              {overflowItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3.5 text-sm transition-all duration-150 ${
+                      isActive
+                        ? "text-accent bg-accent/10"
+                        : "text-text2 hover:text-text hover:bg-surface2"
+                    }`
+                  }>
+                  <span className="text-base">{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
     </>
   );

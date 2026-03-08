@@ -36,7 +36,7 @@ export function TransactionsPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-sans text-2xl font-bold tracking-tight text-text">Transactions</h1>
-        <Button onClick={() => setModalOpen(true)}>+ Add Transaction</Button>
+        <Button onClick={() => setModalOpen(true)} className="hidden md:inline-flex">+ Add Transaction</Button>
       </div>
 
       <PendingRecurring />
@@ -54,6 +54,15 @@ export function TransactionsPage() {
       </Panel>
 
       <TransactionModal open={modalOpen} onClose={handleClose} editTransaction={editTx} />
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => setModalOpen(true)}
+        className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-accent text-bg text-2xl font-bold shadow-lg flex items-center justify-center transition-transform active:scale-95"
+        aria-label="Add transaction"
+      >
+        +
+      </button>
     </div>
   )
 }
