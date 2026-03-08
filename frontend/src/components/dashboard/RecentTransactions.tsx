@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useTransactions } from '../../hooks/useTransactions'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
+import { useAppContext } from '../../context/AppContext'
 import { formatCurrency, formatDate } from '../../utils/format'
 import { Panel } from '../ui/Panel'
 import { Button } from '../ui/Button'
 
 export function RecentTransactions() {
+  const { state } = useAppContext()
   const transactions = useTransactions({ status: 'confirmed' })
   const month = useCurrentMonth()
 
@@ -27,7 +29,31 @@ export function RecentTransactions() {
           </div>
         ) : (
           recent.map(tx => {
-            const cat = month?.categories.find(c => c.id === tx.categoryId)
+            const cat = tx.categoryId != null ? month?.categories.find(c => c.id === tx.categoryId) : null
+            const account = tx.accountId != null ? state.accounts.find(a => a.id === tx.accountId) : null
+            const toAccount = tx.toAccountId != null ? state.accounts.find(a => a.id === tx.toAccountId) : null
+
+            let labelColor: string
+            let labelText: string
+
+            if (tx.type === 'transfer') {
+              labelColor = account?.color ?? toAccount?.color ?? '#555'
+              labelText = account && toAccount ? `${account.name} → ${toAccount.name}` : 'Transfer'
+            } else {
+              labelColor = account?.color ?? cat?.color ?? '#555'
+              labelText = account ? account.name : (cat?.name ?? 'Uncategorized')
+            }
+
+            const amountColor =
+              tx.type === 'income' ? 'text-accent3' :
+              tx.type === 'transfer' ? 'text-text2' :
+              'text-accent2'
+
+            const amountPrefix =
+              tx.type === 'income' ? '+' :
+              tx.type === 'transfer' ? '⇄ ' :
+              ''
+
             return (
               <div
                 key={tx.id}
@@ -37,14 +63,14 @@ export function RecentTransactions() {
                   <span className="inline-flex items-center gap-2 text-xs text-text2 bg-surface2 px-2.5 py-1 rounded border border-border max-w-full overflow-hidden">
                     <span
                       className="inline-block w-2 h-2 rounded-full shrink-0"
-                      style={{ background: cat?.color ?? '#555' }}
+                      style={{ background: labelColor }}
                     />
-                    <span className="truncate">{cat?.name ?? 'Unknown'}</span>
+                    <span className="truncate">{labelText}</span>
                   </span>
                 </div>
                 <div className="text-sm text-text">{tx.name}</div>
-                <div className={`text-sm text-right font-medium ${tx.type === 'income' ? 'text-accent3' : 'text-accent2'}`}>
-                  {tx.type === 'income' ? '+' : ''}{formatCurrency(tx.amount)}
+                <div className={`text-sm text-right font-medium ${amountColor}`}>
+                  {amountPrefix}{formatCurrency(tx.amount)}
                 </div>
                 <div className="text-xs text-text3 text-right max-[900px]:hidden">
                   {formatDate(tx.date)}

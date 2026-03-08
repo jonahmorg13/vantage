@@ -1,4 +1,4 @@
-import type { AppState, Category, MonthBudget, Transaction, RecurringTransaction, CategoryTemplate } from '../types'
+import type { AppState, Category, MonthBudget, Transaction, RecurringTransaction, CategoryTemplate, Account } from '../types'
 import { nowISO } from '../utils/format'
 
 export type AppAction =
@@ -25,6 +25,10 @@ export type AppAction =
   | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
+  // Account actions
+  | { type: 'ADD_ACCOUNT'; account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'> }
+  | { type: 'UPDATE_ACCOUNT'; id: number; updates: Partial<Account> }
+  | { type: 'DELETE_ACCOUNT'; id: number }
   // Bulk
   | { type: 'LOAD_STATE'; state: AppState }
 
@@ -265,6 +269,40 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           ...state.settings,
           categoryTemplates: state.settings.categoryTemplates.filter(t => t.id !== action.id),
         },
+      }
+
+    case 'ADD_ACCOUNT': {
+      const newId = state.nextIds.account
+      const now = nowISO()
+      return {
+        ...state,
+        accounts: [
+          ...state.accounts,
+          { ...action.account, id: newId, createdAt: now, updatedAt: now },
+        ],
+        nextIds: { ...state.nextIds, account: newId + 1 },
+      }
+    }
+
+    case 'UPDATE_ACCOUNT':
+      return {
+        ...state,
+        accounts: state.accounts.map(a =>
+          a.id === action.id ? { ...a, ...action.updates, updatedAt: nowISO() } : a
+        ),
+      }
+
+    case 'DELETE_ACCOUNT':
+      return {
+        ...state,
+        accounts: state.accounts.filter(a => a.id !== action.id),
+        // Nullify account references on transactions when account is deleted
+        transactions: state.transactions.map(t => {
+          const updates: Partial<Transaction> = {}
+          if (t.accountId === action.id) updates.accountId = undefined
+          if (t.toAccountId === action.id) updates.toAccountId = undefined
+          return Object.keys(updates).length > 0 ? { ...t, ...updates } : t
+        }),
       }
 
     case 'LOAD_STATE':

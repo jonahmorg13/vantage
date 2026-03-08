@@ -5,6 +5,8 @@ import { DashboardPage } from './pages/DashboardPage'
 import { TransactionsPage } from './pages/TransactionsPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { AccountsPage } from './pages/AccountsPage'
+import { FuturePage } from './pages/FuturePage'
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/future" element={<FuturePage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>

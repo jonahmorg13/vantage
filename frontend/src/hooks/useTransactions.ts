@@ -50,9 +50,10 @@ export function useSpentByCategory(monthKey?: string): Map<number, number> {
   return useMemo(() => {
     const map = new Map<number, number>()
     state.transactions
-      .filter(t => t.monthKey === key && t.status === 'confirmed' && t.type === 'expense')
+      .filter(t => t.monthKey === key && t.status === 'confirmed' && t.type === 'expense' && t.categoryId != null)
       .forEach(t => {
-        map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + t.amount)
+        const cid = t.categoryId!
+        map.set(cid, (map.get(cid) ?? 0) + t.amount)
       })
     return map
   }, [state.transactions, key])

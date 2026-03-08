@@ -20,8 +20,10 @@ export interface Transaction {
   id: number
   name: string
   amount: number
-  type: 'expense' | 'income'
-  categoryId: number
+  type: 'expense' | 'income' | 'transfer'
+  categoryId?: number
+  accountId?: number      // account money goes INTO (for expense/income) or FROM (for transfer)
+  toAccountId?: number    // transfer destination account
   date: string
   monthKey: string
   recurringId?: number
@@ -38,6 +40,16 @@ export interface RecurringTransaction {
   categoryId: number
   dayOfMonth: number
   isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Account {
+  id: number
+  name: string
+  color: string
+  accountType: 'checking' | 'savings' | 'brokerage' | '401k' | 'ira' | 'roth_ira' | 'hsa' | 'other'
+  initialBalance: number
   createdAt: string
   updatedAt: string
 }
@@ -61,11 +73,13 @@ export interface AppState {
   monthBudgets: MonthBudget[]
   transactions: Transaction[]
   recurringTransactions: RecurringTransaction[]
+  accounts: Account[]
   currentMonthKey: string
   nextIds: {
     category: number
     categoryTemplate: number
     transaction: number
     recurringTransaction: number
+    account: number
   }
 }

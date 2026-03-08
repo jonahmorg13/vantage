@@ -27,12 +27,14 @@ const defaultState: AppState = {
   monthBudgets: [],
   transactions: [],
   recurringTransactions: [],
+  accounts: [],
   currentMonthKey: getCurrentMonthKey(),
   nextIds: {
     category: 100,
     categoryTemplate: 14,
     transaction: 100,
     recurringTransaction: 1,
+    account: 1,
   },
 }
 
@@ -60,7 +62,29 @@ function migrateState(raw: any): AppState {
     return m
   })
 
-  return { ...raw, settings, monthBudgets } as AppState
+  // Migrate investmentAccounts → accounts
+  const accounts = raw.accounts ?? raw.investmentAccounts ?? []
+
+  // Migrate transactions: type 'investment' → 'expense', investmentAccountId → accountId
+  const transactions = (raw.transactions ?? []).map((t: any) => {
+    if (t.type === 'investment') {
+      t = { ...t, type: 'expense' }
+      if (t.investmentAccountId !== undefined) {
+        t = { ...t, accountId: t.investmentAccountId }
+      }
+    }
+    delete t.investmentAccountId
+    return t
+  })
+
+  const nextIds = {
+    ...(raw.nextIds ?? {}),
+    account: raw.nextIds?.account ?? raw.nextIds?.investmentAccount ?? 1,
+  }
+  delete nextIds.investmentAccount
+  delete nextIds.investmentContribution
+
+  return { ...raw, settings, monthBudgets, accounts, transactions, nextIds } as AppState
 }
 
 function loadState(): AppState {
