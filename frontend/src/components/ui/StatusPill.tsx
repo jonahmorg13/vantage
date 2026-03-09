@@ -20,7 +20,9 @@ export function StatusPill({ status }: StatusPillProps) {
   }
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${styles[status]}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${styles[status]}`}
+    >
       {labels[status]}
     </span>
   )

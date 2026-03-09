@@ -1,10 +1,11 @@
 import { useTransactions } from '../../hooks/useTransactions'
-import { useAppContext } from '../../context/AppContext'
+import { useRepositories } from '../../repositories/RepositoryContext'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
-import { formatCurrency } from '../../utils/format'
+import { useCurrency } from '../../hooks/useCurrency'
 
 export function PendingRecurring() {
-  const { dispatch } = useAppContext()
+  const format = useCurrency()
+  const { transactions: txRepo } = useRepositories()
   const month = useCurrentMonth()
   const pending = useTransactions({ status: 'pending' })
 
@@ -18,13 +19,13 @@ export function PendingRecurring() {
         </span>
         <div className="flex gap-3">
           <button
-            onClick={() => pending.forEach(tx => dispatch({ type: 'CONFIRM_TRANSACTION', id: tx.id }))}
+            onClick={() => pending.forEach((tx) => txRepo.confirm(tx.id))}
             className="text-xs text-accent3 bg-accent3/10 px-3 py-1.5 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
           >
             Confirm All
           </button>
           <button
-            onClick={() => pending.forEach(tx => dispatch({ type: 'DISMISS_TRANSACTION', id: tx.id }))}
+            onClick={() => pending.forEach((tx) => txRepo.dismiss(tx.id))}
             className="text-xs text-danger bg-danger/10 px-3 py-1.5 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
           >
             Dismiss All
@@ -32,8 +33,8 @@ export function PendingRecurring() {
         </div>
       </div>
       <div>
-        {pending.map(tx => {
-          const cat = month?.categories.find(c => c.id === tx.categoryId)
+        {pending.map((tx) => {
+          const cat = month?.categories.find((c) => c.id === tx.categoryId)
           return (
             <div
               key={tx.id}
@@ -44,17 +45,15 @@ export function PendingRecurring() {
                 style={{ background: cat?.color ?? '#555' }}
               />
               <span className="text-sm text-text flex-1">{tx.name}</span>
-              <span className="text-sm text-accent2 font-medium">
-                {formatCurrency(tx.amount)}
-              </span>
+              <span className="text-sm text-accent2 font-medium">{format(tx.amount)}</span>
               <button
-                onClick={() => dispatch({ type: 'CONFIRM_TRANSACTION', id: tx.id })}
+                onClick={() => txRepo.confirm(tx.id)}
                 className="text-xs text-accent3 bg-accent3/10 px-2.5 py-1 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
               >
                 ✓
               </button>
               <button
-                onClick={() => dispatch({ type: 'DISMISS_TRANSACTION', id: tx.id })}
+                onClick={() => txRepo.dismiss(tx.id)}
                 className="text-xs text-danger bg-danger/10 px-2.5 py-1 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
               >
                 ×

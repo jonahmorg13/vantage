@@ -1,5 +1,10 @@
 import { useAppContext } from '../../context/AppContext'
-import { formatMonthDisplay, prevMonthKey, nextMonthKey, getCurrentMonthKey } from '../../utils/format'
+import {
+  formatMonthDisplay,
+  prevMonthKey,
+  nextMonthKey,
+  getCurrentMonthKey,
+} from '../../utils/format'
 
 export function MonthPicker() {
   const { state, dispatch } = useAppContext()
@@ -7,9 +12,8 @@ export function MonthPicker() {
   const isCurrentMonth = currentMonthKey === getCurrentMonthKey()
 
   function navigate(direction: 'prev' | 'next') {
-    const newKey = direction === 'prev'
-      ? prevMonthKey(currentMonthKey)
-      : nextMonthKey(currentMonthKey)
+    const newKey =
+      direction === 'prev' ? prevMonthKey(currentMonthKey) : nextMonthKey(currentMonthKey)
     dispatch({ type: 'SET_MONTH', monthKey: newKey })
   }
 

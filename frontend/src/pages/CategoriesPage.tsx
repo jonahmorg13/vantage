@@ -5,10 +5,12 @@ import { CategoryTable } from '../components/categories/CategoryTable'
 import { CategoryModal } from '../components/categories/CategoryModal'
 import { useAppContext } from '../context/AppContext'
 import { useCurrentMonth } from '../hooks/useMonthBudget'
-import { getCurrentMonthKey, formatCurrency } from '../utils/format'
+import { getCurrentMonthKey } from '../utils/format'
+import { useCurrency } from '../hooks/useCurrency'
 import type { Category } from '../types'
 
 export function CategoriesPage() {
+  const format = useCurrency()
   const { state } = useAppContext()
   const month = useCurrentMonth()
   const isPastMonth = state.currentMonthKey < getCurrentMonthKey()
@@ -37,9 +39,8 @@ export function CategoriesPage() {
           {Math.abs(unallocated) > 0.005 && (
             <span className={`text-sm ${unallocated < 0 ? 'text-danger' : 'text-warning'}`}>
               {unallocated > 0
-                ? `⚠ ${formatCurrency(unallocated)} unallocated`
-                : `⚠ Over-allocated by ${formatCurrency(Math.abs(unallocated))}`
-              }
+                ? `⚠ ${format(unallocated)} unallocated`
+                : `⚠ Over-allocated by ${format(Math.abs(unallocated))}`}
             </span>
           )}
           {isPastMonth ? (

@@ -1,4 +1,12 @@
-import type { AppState, Category, MonthBudget, Transaction, RecurringTransaction, CategoryTemplate, Account } from '../types'
+import type {
+  AppState,
+  Category,
+  MonthBudget,
+  Transaction,
+  RecurringTransaction,
+  CategoryTemplate,
+  Account,
+} from '../types'
 import { nowISO } from '../utils/format'
 
 export type AppAction =
@@ -17,11 +25,14 @@ export type AppAction =
   | { type: 'CONFIRM_TRANSACTION'; id: number }
   | { type: 'DISMISS_TRANSACTION'; id: number }
   // Recurring transaction actions
-  | { type: 'ADD_RECURRING'; recurring: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'> }
+  | {
+      type: 'ADD_RECURRING'
+      recurring: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'>
+    }
   | { type: 'UPDATE_RECURRING'; id: number; updates: Partial<RecurringTransaction> }
   | { type: 'DELETE_RECURRING'; id: number }
   // Settings actions
-  | { type: 'UPDATE_SETTINGS'; defaultTakeHomePay?: number }
+  | { type: 'UPDATE_SETTINGS'; defaultTakeHomePay?: number; currencySymbol?: string }
   | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
@@ -39,7 +50,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, currentMonthKey: action.monthKey }
 
     case 'INIT_MONTH': {
-      const existing = state.monthBudgets.find(m => m.monthKey === action.monthKey)
+      const existing = state.monthBudgets.find((m) => m.monthKey === action.monthKey)
       if (existing) return state
 
       const now = nowISO()
@@ -63,7 +74,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
       // Generate pending transactions from recurring
       const pendingTxs: Transaction[] = state.recurringTransactions
-        .filter(r => r.isActive)
+        .filter((r) => r.isActive)
         .map((r, i) => ({
           id: state.nextIds.transaction + i,
           name: r.name,
@@ -93,7 +104,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_MONTH_INCOME':
       return {
         ...state,
-        monthBudgets: state.monthBudgets.map(m =>
+        monthBudgets: state.monthBudgets.map((m) =>
           m.monthKey === action.monthKey
             ? { ...m, takeHomePay: action.takeHomePay, updatedAt: nowISO() }
             : m
@@ -103,10 +114,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'LOCK_MONTH':
       return {
         ...state,
-        monthBudgets: state.monthBudgets.map(m =>
-          m.monthKey === action.monthKey
-            ? { ...m, isLocked: true, updatedAt: nowISO() }
-            : m
+        monthBudgets: state.monthBudgets.map((m) =>
+          m.monthKey === action.monthKey ? { ...m, isLocked: true, updatedAt: nowISO() } : m
         ),
       }
 
@@ -114,7 +123,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       const newId = state.nextIds.category
       return {
         ...state,
-        monthBudgets: state.monthBudgets.map(m =>
+        monthBudgets: state.monthBudgets.map((m) =>
           m.monthKey === action.monthKey
             ? {
                 ...m,
@@ -130,11 +139,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_CATEGORY':
       return {
         ...state,
-        monthBudgets: state.monthBudgets.map(m =>
+        monthBudgets: state.monthBudgets.map((m) =>
           m.monthKey === action.monthKey
             ? {
                 ...m,
-                categories: m.categories.map(c =>
+                categories: m.categories.map((c) =>
                   c.id === action.id ? { ...c, ...action.updates } : c
                 ),
                 updatedAt: nowISO(),
@@ -146,17 +155,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DELETE_CATEGORY':
       return {
         ...state,
-        monthBudgets: state.monthBudgets.map(m =>
+        monthBudgets: state.monthBudgets.map((m) =>
           m.monthKey === action.monthKey
             ? {
                 ...m,
-                categories: m.categories.filter(c => c.id !== action.id),
+                categories: m.categories.filter((c) => c.id !== action.id),
                 updatedAt: nowISO(),
               }
             : m
         ),
         transactions: state.transactions.filter(
-          t => !(t.monthKey === action.monthKey && t.categoryId === action.id)
+          (t) => !(t.monthKey === action.monthKey && t.categoryId === action.id)
         ),
       }
 
@@ -176,7 +185,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_TRANSACTION':
       return {
         ...state,
-        transactions: state.transactions.map(t =>
+        transactions: state.transactions.map((t) =>
           t.id === action.id ? { ...t, ...action.updates, updatedAt: nowISO() } : t
         ),
       }
@@ -184,13 +193,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DELETE_TRANSACTION':
       return {
         ...state,
-        transactions: state.transactions.filter(t => t.id !== action.id),
+        transactions: state.transactions.filter((t) => t.id !== action.id),
       }
 
     case 'CONFIRM_TRANSACTION':
       return {
         ...state,
-        transactions: state.transactions.map(t =>
+        transactions: state.transactions.map((t) =>
           t.id === action.id ? { ...t, status: 'confirmed' as const, updatedAt: nowISO() } : t
         ),
       }
@@ -198,26 +207,52 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DISMISS_TRANSACTION':
       return {
         ...state,
-        transactions: state.transactions.filter(t => t.id !== action.id),
+        transactions: state.transactions.filter((t) => t.id !== action.id),
       }
 
     case 'ADD_RECURRING': {
       const newId = state.nextIds.recurringTransaction
       const now = nowISO()
+      const newRecurring: RecurringTransaction = {
+        ...action.recurring,
+        id: newId,
+        createdAt: now,
+        updatedAt: now,
+      }
+
+      // If active, generate a pending transaction for the current month immediately
+      const pendingTx: Transaction | null = newRecurring.isActive
+        ? {
+            id: state.nextIds.transaction,
+            name: newRecurring.name,
+            amount: newRecurring.amount,
+            type: newRecurring.type,
+            categoryId: newRecurring.categoryId,
+            date: `${state.currentMonthKey}-${String(newRecurring.dayOfMonth).padStart(2, '0')}`,
+            monthKey: state.currentMonthKey,
+            recurringId: newId,
+            status: 'pending' as const,
+            createdAt: now,
+            updatedAt: now,
+          }
+        : null
+
       return {
         ...state,
-        recurringTransactions: [
-          ...state.recurringTransactions,
-          { ...action.recurring, id: newId, createdAt: now, updatedAt: now },
-        ],
-        nextIds: { ...state.nextIds, recurringTransaction: newId + 1 },
+        recurringTransactions: [...state.recurringTransactions, newRecurring],
+        transactions: pendingTx ? [...state.transactions, pendingTx] : state.transactions,
+        nextIds: {
+          ...state.nextIds,
+          recurringTransaction: newId + 1,
+          transaction: pendingTx ? state.nextIds.transaction + 1 : state.nextIds.transaction,
+        },
       }
     }
 
     case 'UPDATE_RECURRING':
       return {
         ...state,
-        recurringTransactions: state.recurringTransactions.map(r =>
+        recurringTransactions: state.recurringTransactions.map((r) =>
           r.id === action.id ? { ...r, ...action.updates, updatedAt: nowISO() } : r
         ),
       }
@@ -225,7 +260,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DELETE_RECURRING':
       return {
         ...state,
-        recurringTransactions: state.recurringTransactions.filter(r => r.id !== action.id),
+        recurringTransactions: state.recurringTransactions.filter((r) => r.id !== action.id),
       }
 
     case 'UPDATE_SETTINGS':
@@ -233,7 +268,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         settings: {
           ...state.settings,
-          ...(action.defaultTakeHomePay !== undefined && { defaultTakeHomePay: action.defaultTakeHomePay }),
+          ...(action.defaultTakeHomePay !== undefined && {
+            defaultTakeHomePay: action.defaultTakeHomePay,
+          }),
+          ...(action.currencySymbol !== undefined && { currencySymbol: action.currencySymbol }),
         },
       }
 
@@ -257,7 +295,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         settings: {
           ...state.settings,
-          categoryTemplates: state.settings.categoryTemplates.map(t =>
+          categoryTemplates: state.settings.categoryTemplates.map((t) =>
             t.id === action.id ? { ...t, ...action.updates } : t
           ),
         },
@@ -268,7 +306,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         settings: {
           ...state.settings,
-          categoryTemplates: state.settings.categoryTemplates.filter(t => t.id !== action.id),
+          categoryTemplates: state.settings.categoryTemplates.filter((t) => t.id !== action.id),
         },
       }
 
@@ -298,7 +336,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_ACCOUNT':
       return {
         ...state,
-        accounts: state.accounts.map(a =>
+        accounts: state.accounts.map((a) =>
           a.id === action.id ? { ...a, ...action.updates, updatedAt: nowISO() } : a
         ),
       }
@@ -306,9 +344,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'DELETE_ACCOUNT':
       return {
         ...state,
-        accounts: state.accounts.filter(a => a.id !== action.id),
+        accounts: state.accounts.filter((a) => a.id !== action.id),
         // Nullify account references on transactions when account is deleted
-        transactions: state.transactions.map(t => {
+        transactions: state.transactions.map((t) => {
           const updates: Partial<Transaction> = {}
           if (t.accountId === action.id) updates.accountId = undefined
           if (t.toAccountId === action.id) updates.toAccountId = undefined

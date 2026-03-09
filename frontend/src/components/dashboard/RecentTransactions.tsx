@@ -1,17 +1,47 @@
 import { Link } from 'react-router-dom'
+import Skeleton from 'react-loading-skeleton'
 import { useTransactions } from '../../hooks/useTransactions'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
 import { useAppContext } from '../../context/AppContext'
-import { formatCurrency, formatDate } from '../../utils/format'
+import { formatDate } from '../../utils/format'
+import { useCurrency } from '../../hooks/useCurrency'
 import { Panel } from '../ui/Panel'
 import { Button } from '../ui/Button'
 
 export function RecentTransactions() {
-  const { state } = useAppContext()
+  const format = useCurrency()
+  const { state, isHydrating } = useAppContext()
   const transactions = useTransactions({ status: 'confirmed' })
   const month = useCurrentMonth()
 
   const recent = transactions.slice(0, 10)
+
+  if (isHydrating) {
+    return (
+      <Panel
+        title="Recent Transactions"
+        action={
+          <Link to="/transactions">
+            <Button variant="secondary">View All</Button>
+          </Link>
+        }
+      >
+        <div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] max-[900px]:grid-cols-[130px_1fr_100px]"
+            >
+              <Skeleton height={24} borderRadius={6} />
+              <Skeleton height={14} />
+              <Skeleton height={14} />
+              <Skeleton height={14} className="max-[900px]:hidden" />
+            </div>
+          ))}
+        </div>
+      </Panel>
+    )
+  }
 
   return (
     <Panel
@@ -28,10 +58,13 @@ export function RecentTransactions() {
             No transactions yet. Add one from the Transactions page.
           </div>
         ) : (
-          recent.map(tx => {
-            const cat = tx.categoryId != null ? month?.categories.find(c => c.id === tx.categoryId) : null
-            const account = tx.accountId != null ? state.accounts.find(a => a.id === tx.accountId) : null
-            const toAccount = tx.toAccountId != null ? state.accounts.find(a => a.id === tx.toAccountId) : null
+          recent.map((tx) => {
+            const cat =
+              tx.categoryId != null ? month?.categories.find((c) => c.id === tx.categoryId) : null
+            const account =
+              tx.accountId != null ? state.accounts.find((a) => a.id === tx.accountId) : null
+            const toAccount =
+              tx.toAccountId != null ? state.accounts.find((a) => a.id === tx.toAccountId) : null
 
             let labelColor: string
             let labelText: string
@@ -45,14 +78,13 @@ export function RecentTransactions() {
             }
 
             const amountColor =
-              tx.type === 'income' ? 'text-accent3' :
-              tx.type === 'transfer' ? 'text-text2' :
-              'text-accent2'
+              tx.type === 'income'
+                ? 'text-accent3'
+                : tx.type === 'transfer'
+                  ? 'text-text2'
+                  : 'text-accent2'
 
-            const amountPrefix =
-              tx.type === 'income' ? '+' :
-              tx.type === 'transfer' ? '⇄ ' :
-              ''
+            const amountPrefix = tx.type === 'income' ? '+' : tx.type === 'transfer' ? '⇄ ' : ''
 
             return (
               <div
@@ -70,7 +102,8 @@ export function RecentTransactions() {
                 </div>
                 <div className="text-sm text-text">{tx.name}</div>
                 <div className={`text-sm text-right font-medium ${amountColor}`}>
-                  {amountPrefix}{formatCurrency(tx.amount)}
+                  {amountPrefix}
+                  {format(tx.amount)}
                 </div>
                 <div className="text-xs text-text3 text-right max-[900px]:hidden">
                   {formatDate(tx.date)}

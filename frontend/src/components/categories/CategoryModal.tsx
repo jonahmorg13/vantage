@@ -1,8 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useAppContext } from '../../context/AppContext'
-import { Modal, FormGroup, FormInput } from '../ui/Modal'
+import { useRepositories } from '../../repositories/RepositoryContext'
+import { Modal, FormGroup, FormInput, MoneyInput } from '../ui/Modal'
 import { Button } from '../ui/Button'
+import { useToast } from '../ui/Toast'
 import type { Category } from '../../types'
+
+const CATEGORY_COLORS = [
+  '#7c6dfa',
+  '#fa6d8e',
+  '#6dfab0',
+  '#fac86d',
+  '#6db8fa',
+  '#fa9d6d',
+  '#b06dfa',
+  '#fa6dc8',
+  '#6dfaed',
+  '#faed6d',
+]
 
 interface CategoryModalProps {
   open: boolean
@@ -11,7 +26,9 @@ interface CategoryModalProps {
 }
 
 export function CategoryModal({ open, onClose, editCategory }: CategoryModalProps) {
-  const { state, dispatch } = useAppContext()
+  const { state } = useAppContext()
+  const { categories: categoryRepo } = useRepositories()
+  const { showToast } = useToast()
   const [name, setName] = useState('')
   const [budgetAmount, setBudgetAmount] = useState('')
   const [spendLimit, setSpendLimit] = useState('')
@@ -28,7 +45,7 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
         setName('')
         setBudgetAmount('')
         setSpendLimit('')
-        setColor('#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'))
+        setColor(CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)])
       }
     }
   }, [open, editCategory])
@@ -36,32 +53,29 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
   function handleSave() {
     if (!name.trim()) return
 
-    if (editCategory) {
-      dispatch({
-        type: 'UPDATE_CATEGORY',
-        monthKey: state.currentMonthKey,
-        id: editCategory.id,
-        updates: {
+    try {
+      if (editCategory) {
+        categoryRepo.update(state.currentMonthKey, editCategory.id, {
           name: name.trim(),
           budgetAmount: parseFloat(budgetAmount) || 0,
           spendLimit: parseFloat(spendLimit) || 0,
           color,
-        },
-      })
-    } else {
-      dispatch({
-        type: 'ADD_CATEGORY',
-        monthKey: state.currentMonthKey,
-        category: {
+        })
+        showToast('Category updated')
+      } else {
+        categoryRepo.create(state.currentMonthKey, {
           name: name.trim(),
           budgetAmount: parseFloat(budgetAmount) || 0,
           spendLimit: parseFloat(spendLimit) || 0,
           color,
           sortOrder: 999,
-        },
-      })
+        })
+        showToast('Category added')
+      }
+      onClose()
+    } catch {
+      showToast('Failed to save category', 'error')
     }
-    onClose()
   }
 
   return (
@@ -71,36 +85,33 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
           type="text"
           placeholder="e.g. Groceries"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
       </FormGroup>
       <div className="grid grid-cols-2 gap-4">
         <FormGroup label="Budget Amount ($)">
-          <FormInput
-            type="number"
-            placeholder="300.00"
-            step="0.01"
-            value={budgetAmount}
-            onChange={e => setBudgetAmount(e.target.value)}
-          />
+          <MoneyInput value={budgetAmount} onChange={setBudgetAmount} placeholder="300.00" />
         </FormGroup>
         <FormGroup label="Spend Limit ($)">
-          <FormInput
-            type="number"
-            placeholder="Same as budget"
-            step="0.01"
-            value={spendLimit}
-            onChange={e => setSpendLimit(e.target.value)}
-          />
+          <MoneyInput value={spendLimit} onChange={setSpendLimit} placeholder="Same as budget" />
         </FormGroup>
       </div>
       <FormGroup label="Color">
-        <FormInput
-          type="color"
-          value={color}
-          onChange={e => setColor(e.target.value)}
-          className="!h-[42px] cursor-pointer"
-        />
+        <div className="flex gap-2 flex-wrap">
+          {CATEGORY_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setColor(c)}
+              className="w-7 h-7 rounded-full border-2 transition-all duration-150"
+              style={{
+                background: c,
+                borderColor: color === c ? '#fff' : 'transparent',
+                outline: color === c ? `2px solid ${c}` : 'none',
+              }}
+            />
+          ))}
+        </div>
       </FormGroup>
       <div className="flex gap-2.5 mt-6">
         <Button variant="secondary" onClick={onClose} className="flex-1 !py-3">

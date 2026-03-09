@@ -1,8 +1,16 @@
 import { useState, useMemo } from 'react'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts'
 import { Panel } from '../components/ui/Panel'
 import { useAppContext } from '../context/AppContext'
-import { formatCurrency } from '../utils/format'
+import { useCurrency } from '../hooks/useCurrency'
 
 const INVESTMENT_TYPES: string[] = ['brokerage', '401k', 'ira', 'roth_ira', 'hsa']
 
@@ -11,12 +19,20 @@ interface AccountProjectionSettings {
 }
 
 export function FuturePage() {
+  const format = useCurrency()
   const { state } = useAppContext()
-  const investmentAccounts = state.accounts.filter(a => INVESTMENT_TYPES.includes(a.accountType))
+  const investmentAccounts = state.accounts.filter((a) => INVESTMENT_TYPES.includes(a.accountType))
 
   const [annualRate, setAnnualRate] = useState(7)
   const [horizonYears, setHorizonYears] = useState(30)
-  const [accountSettings, setAccountSettings] = useState<Record<number, AccountProjectionSettings>>({})
+  const [accountSettings, setAccountSettings] = useState<Record<number, AccountProjectionSettings>>(
+    () =>
+      Object.fromEntries(
+        state.accounts
+          .filter((a) => INVESTMENT_TYPES.includes(a.accountType))
+          .map((a) => [a.id, { monthlyContribution: '500' }])
+      )
+  )
 
   // Compute current balance per account (initial + all confirmed activity)
   const currentBalances = useMemo(() => {
@@ -39,12 +55,12 @@ export function FuturePage() {
     const result: Record<number, number> = {}
     for (const account of investmentAccounts) {
       const contribs = state.transactions.filter(
-        t => t.type === 'income' && t.accountId === account.id && t.status === 'confirmed'
+        (t) => t.type === 'income' && t.accountId === account.id && t.status === 'confirmed'
       )
       if (contribs.length === 0) {
         result[account.id] = 0
       } else {
-        const uniqueMonths = new Set(contribs.map(c => c.monthKey)).size
+        const uniqueMonths = new Set(contribs.map((c) => c.monthKey)).size
         const total = contribs.reduce((a, c) => a + c.amount, 0)
         result[account.id] = uniqueMonths > 0 ? total / uniqueMonths : 0
       }
@@ -81,7 +97,8 @@ export function FuturePage() {
     for (let month = 1; month <= totalMonths; month++) {
       for (const account of investmentAccounts) {
         const monthly = getMonthlyContribution(account.id)
-        runningBalances[account.id] = (runningBalances[account.id] ?? 0) * (1 + monthlyRate) + monthly
+        runningBalances[account.id] =
+          (runningBalances[account.id] ?? 0) * (1 + monthlyRate) + monthly
       }
       if (month % 12 === 0) {
         const yearNum = month / 12
@@ -94,7 +111,7 @@ export function FuturePage() {
     }
 
     return dataPoints
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investmentAccounts, currentBalances, annualRate, horizonYears, accountSettings])
 
   // Summary stats
@@ -125,7 +142,9 @@ export function FuturePage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-sans text-3xl font-extrabold tracking-tight gradient-text">Future Projections</h1>
+        <h1 className="font-sans text-3xl font-extrabold tracking-tight gradient-text">
+          Future Projections
+        </h1>
         <p className="text-text3 text-sm mt-1">See how your investments could grow over time</p>
       </div>
 
@@ -143,7 +162,7 @@ export function FuturePage() {
                 max={20}
                 step={0.5}
                 value={annualRate}
-                onChange={e => setAnnualRate(parseFloat(e.target.value))}
+                onChange={(e) => setAnnualRate(parseFloat(e.target.value))}
                 className="w-full accent-[var(--color-accent)] h-2 rounded-lg appearance-none bg-surface2 cursor-pointer"
               />
               <div className="flex justify-between text-xs text-text3 mt-1">
@@ -153,7 +172,8 @@ export function FuturePage() {
             </div>
             <div>
               <label className="block text-xs text-text3 tracking-[0.1em] uppercase mb-2">
-                Projection Horizon: <span className="text-accent font-mono">{horizonYears} years</span>
+                Projection Horizon:{' '}
+                <span className="text-accent font-mono">{horizonYears} years</span>
               </label>
               <input
                 type="range"
@@ -161,7 +181,7 @@ export function FuturePage() {
                 max={50}
                 step={1}
                 value={horizonYears}
-                onChange={e => setHorizonYears(parseInt(e.target.value))}
+                onChange={(e) => setHorizonYears(parseInt(e.target.value))}
                 className="w-full accent-[var(--color-accent)] h-2 rounded-lg appearance-none bg-surface2 cursor-pointer"
               />
               <div className="flex justify-between text-xs text-text3 mt-1">
@@ -174,22 +194,32 @@ export function FuturePage() {
           {/* Per-account contribution overrides */}
           {investmentAccounts.length > 0 && (
             <div className="mt-6">
-              <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-3">Monthly Contributions</div>
+              <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-3">
+                Monthly Contributions
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {investmentAccounts.map(account => (
-                  <div key={account.id} className="flex items-center gap-3 bg-surface2 rounded-lg px-4 py-3">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: account.color }} />
+                {investmentAccounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className="flex items-center gap-3 bg-surface2 rounded-lg px-4 py-3"
+                  >
+                    <div
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ background: account.color }}
+                    />
                     <span className="text-text2 text-sm flex-1 truncate">{account.name}</span>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 text-sm font-mono">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 text-sm font-mono">
+                        $
+                      </span>
                       <input
                         type="number"
                         min="0"
                         step="1"
                         placeholder={averageMonthly[account.id]?.toFixed(0) ?? '0'}
                         value={accountSettings[account.id]?.monthlyContribution ?? ''}
-                        onChange={e =>
-                          setAccountSettings(prev => ({
+                        onChange={(e) =>
+                          setAccountSettings((prev) => ({
                             ...prev,
                             [account.id]: { monthlyContribution: e.target.value },
                           }))
@@ -209,16 +239,26 @@ export function FuturePage() {
       {investmentAccounts.length > 0 && (
         <div className="grid grid-cols-3 gap-5 mb-6 max-[700px]:grid-cols-1">
           <div className="bg-surface border border-border rounded-xl px-5 py-4">
-            <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">Total Value in {horizonYears}y</div>
-            <div className="font-mono text-2xl font-bold text-accent3">{formatCurrency(totalFinalValue)}</div>
+            <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">
+              Total Value in {horizonYears}y
+            </div>
+            <div className="font-mono text-2xl font-bold text-accent3">
+              {format(totalFinalValue)}
+            </div>
           </div>
           <div className="bg-surface border border-border rounded-xl px-5 py-4">
-            <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">Total Contributions</div>
-            <div className="font-mono text-2xl font-bold text-accent">{formatCurrency(totalInitial + totalContributions)}</div>
+            <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">
+              Total Contributions
+            </div>
+            <div className="font-mono text-2xl font-bold text-accent">
+              {format(totalInitial + totalContributions)}
+            </div>
           </div>
           <div className="bg-surface border border-border rounded-xl px-5 py-4">
             <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">Total Growth</div>
-            <div className="font-mono text-2xl font-bold text-accent2">{formatCurrency(Math.max(0, totalGrowth))}</div>
+            <div className="font-mono text-2xl font-bold text-accent2">
+              {format(Math.max(0, totalGrowth))}
+            </div>
           </div>
         </div>
       )}
@@ -228,15 +268,24 @@ export function FuturePage() {
         {investmentAccounts.length === 0 ? (
           <div className="px-8 py-16 text-center text-text3">
             <div className="text-4xl mb-4">◈</div>
-            <div className="text-sm">Add investment accounts (brokerage, 401k, IRA, HSA) to see projections.</div>
+            <div className="text-sm">
+              Add investment accounts (brokerage, 401k, IRA, HSA) to see projections.
+            </div>
           </div>
         ) : (
           <div className="p-6">
             <ResponsiveContainer width="100%" height={380}>
-              <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
-                  {investmentAccounts.map(account => (
-                    <linearGradient key={account.id} id={`grad_${account.id}`} x1="0" y1="0" x2="0" y2="1">
+                  {investmentAccounts.map((account) => (
+                    <linearGradient
+                      key={account.id}
+                      id={`grad_${account.id}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor={account.color} stopOpacity={0.35} />
                       <stop offset="95%" stopColor={account.color} stopOpacity={0.05} />
                     </linearGradient>
@@ -245,14 +294,22 @@ export function FuturePage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis
                   dataKey="year"
-                  tickFormatter={v => `${v}y`}
-                  tick={{ fill: 'var(--color-text3)', fontSize: 12, fontFamily: 'var(--font-mono)' }}
+                  tickFormatter={(v) => `${v}y`}
+                  tick={{
+                    fill: 'var(--color-text3)',
+                    fontSize: 12,
+                    fontFamily: 'var(--font-mono)',
+                  }}
                   axisLine={{ stroke: 'var(--color-border)' }}
                   tickLine={false}
                 />
                 <YAxis
                   tickFormatter={formatYAxis}
-                  tick={{ fill: 'var(--color-text3)', fontSize: 12, fontFamily: 'var(--font-mono)' }}
+                  tick={{
+                    fill: 'var(--color-text3)',
+                    fontSize: 12,
+                    fontFamily: 'var(--font-mono)',
+                  }}
                   axisLine={{ stroke: 'var(--color-border)' }}
                   tickLine={false}
                   width={70}
@@ -266,15 +323,15 @@ export function FuturePage() {
                     fontSize: '13px',
                     color: 'var(--color-text)',
                   }}
-                  labelFormatter={v => `Year ${v}`}
+                  labelFormatter={(v) => `Year ${v}`}
                   formatter={(value, name) => {
                     const nameStr = String(name ?? '')
                     const accountId = parseInt(nameStr.replace('account_', ''))
-                    const account = investmentAccounts.find(a => a.id === accountId)
-                    return [formatCurrency(Number(value ?? 0)), account?.name ?? nameStr]
+                    const account = investmentAccounts.find((a) => a.id === accountId)
+                    return [format(Number(value ?? 0)), account?.name ?? nameStr]
                   }}
                 />
-                {investmentAccounts.map(account => (
+                {investmentAccounts.map((account) => (
                   <Area
                     key={account.id}
                     type="monotone"
@@ -292,7 +349,7 @@ export function FuturePage() {
 
             {/* Legend */}
             <div className="flex flex-wrap gap-4 mt-4 justify-center">
-              {investmentAccounts.map(account => (
+              {investmentAccounts.map((account) => (
                 <div key={account.id} className="flex items-center gap-2 text-sm">
                   <div className="w-3 h-3 rounded-sm" style={{ background: account.color }} />
                   <span className="text-text2">{account.name}</span>

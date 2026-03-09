@@ -11,9 +11,12 @@ interface TransactionFiltersProps {
 }
 
 export function TransactionFilters({
-  search, onSearchChange,
-  categoryFilter, onCategoryFilterChange,
-  typeFilter, onTypeFilterChange,
+  search,
+  onSearchChange,
+  categoryFilter,
+  onCategoryFilterChange,
+  typeFilter,
+  onTypeFilterChange,
 }: TransactionFiltersProps) {
   const month = useCurrentMonth()
 
@@ -23,22 +26,28 @@ export function TransactionFilters({
         type="text"
         placeholder="Search transactions..."
         value={search}
-        onChange={e => onSearchChange(e.target.value)}
+        onChange={(e) => onSearchChange(e.target.value)}
         className="!w-64"
       />
       <FormSelect
         value={categoryFilter ?? ''}
-        onChange={e => onCategoryFilterChange(e.target.value ? Number(e.target.value) : undefined)}
+        onChange={(e) =>
+          onCategoryFilterChange(e.target.value ? Number(e.target.value) : undefined)
+        }
         className="!w-52"
       >
         <option value="">All Categories</option>
-        {month?.categories.map(c => (
-          <option key={c.id} value={c.id}>{c.name}</option>
+        {month?.categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
         ))}
       </FormSelect>
       <FormSelect
         value={typeFilter ?? ''}
-        onChange={e => onTypeFilterChange(e.target.value as 'expense' | 'income' | undefined || undefined)}
+        onChange={(e) =>
+          onTypeFilterChange((e.target.value as 'expense' | 'income' | undefined) || undefined)
+        }
         className="!w-40"
       >
         <option value="">All Types</option>

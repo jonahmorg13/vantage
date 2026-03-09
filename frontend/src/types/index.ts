@@ -22,8 +22,8 @@ export interface Transaction {
   amount: number
   type: 'expense' | 'income' | 'transfer'
   categoryId?: number
-  accountId?: number      // account money goes INTO (for expense/income) or FROM (for transfer)
-  toAccountId?: number    // transfer destination account
+  accountId?: number // account money goes INTO (for expense/income) or FROM (for transfer)
+  toAccountId?: number // transfer destination account
   date: string
   monthKey: string
   recurringId?: number
@@ -65,6 +65,7 @@ export interface MonthBudget {
 
 export interface AppSettings {
   defaultTakeHomePay: number
+  currencySymbol: string
   categoryTemplates: CategoryTemplate[]
 }
 

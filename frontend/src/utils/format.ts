@@ -1,8 +1,11 @@
-export function formatCurrency(n: number): string {
-  return '$' + Math.abs(n).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+export function formatCurrency(n: number, symbol = '$'): string {
+  return (
+    symbol +
+    Math.abs(n).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  )
 }
 
 export function formatCurrencySigned(n: number): string {

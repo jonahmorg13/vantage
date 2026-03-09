@@ -18,14 +18,16 @@ export function Card({ children, accentColor, className = '' }: CardProps) {
 }
 
 export function CardLabel({ children }: { children: ReactNode }) {
-  return (
-    <div className="text-xs text-text3 tracking-[0.15em] uppercase mb-3">
-      {children}
-    </div>
-  )
+  return <div className="text-xs text-text3 tracking-[0.15em] uppercase mb-3">{children}</div>
 }
 
-export function CardValue({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function CardValue({
+  children,
+  className = '',
+}: {
+  children: ReactNode
+  className?: string
+}) {
   return (
     <div className={`font-sans text-xl md:text-3xl font-bold tracking-tight truncate ${className}`}>
       {children}
@@ -34,9 +36,5 @@ export function CardValue({ children, className = '' }: { children: ReactNode; c
 }
 
 export function CardSub({ children }: { children: ReactNode }) {
-  return (
-    <div className="text-sm text-text2 mt-2">
-      {children}
-    </div>
-  )
+  return <div className="text-sm text-text2 mt-2">{children}</div>
 }

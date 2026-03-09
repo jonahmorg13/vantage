@@ -1,0 +1,900 @@
+openapi: 3.1.0
+info:
+  title: Budget App API
+  version: 1.0.0
+  description: REST API for the budget tracking application
+
+servers:
+  - url: http://localhost:5000
+    description: Local development
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Category:
+      type: object
+      required: [id, name, color, budgetAmount, spendLimit, sortOrder]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        color: { type: string }
+        budgetAmount: { type: number }
+        spendLimit: { type: number }
+        sortOrder: { type: integer }
+
+    CategoryTemplate:
+      type: object
+      required: [id, name, color, defaultBudgetAmount, defaultSpendLimit, sortOrder]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        color: { type: string }
+        defaultBudgetAmount: { type: number }
+        defaultSpendLimit: { type: number }
+        sortOrder: { type: integer }
+
+    Transaction:
+      type: object
+      required: [id, name, amount, type, date, monthKey, status, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        amount: { type: number }
+        type:
+          type: string
+          enum: [expense, income, transfer]
+        categoryId: { type: integer, nullable: true }
+        accountId: { type: integer, nullable: true }
+        toAccountId: { type: integer, nullable: true }
+        date: { type: string, format: date }
+        monthKey: { type: string, example: '2026-03' }
+        recurringId: { type: integer, nullable: true }
+        status:
+          type: string
+          enum: [confirmed, pending]
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RecurringTransaction:
+      type: object
+      required: [id, name, amount, type, categoryId, dayOfMonth, isActive, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        amount: { type: number }
+        type:
+          type: string
+          enum: [expense, income]
+        categoryId: { type: integer }
+        dayOfMonth: { type: integer, minimum: 1, maximum: 31 }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Account:
+      type: object
+      required: [id, name, color, accountType, initialBalance, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        color: { type: string }
+        accountType:
+          type: string
+          enum: [checking, savings, brokerage, '401k', ira, roth_ira, hsa, other]
+        initialBalance: { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    MonthBudget:
+      type: object
+      required: [monthKey, takeHomePay, categories, isLocked, createdAt, updatedAt]
+      properties:
+        monthKey: { type: string, example: '2026-03' }
+        takeHomePay: { type: number }
+        categories:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+        isLocked: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AppSettings:
+      type: object
+      required: [defaultTakeHomePay, categoryTemplates]
+      properties:
+        defaultTakeHomePay: { type: number }
+        categoryTemplates:
+          type: array
+          items: { $ref: '#/components/schemas/CategoryTemplate' }
+
+    AuthTokens:
+      type: object
+      required: [accessToken, refreshToken]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        code: { type: string }
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ─── Auth ──────────────────────────────────────────────────────────────────
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthTokens' }
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthTokens' }
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '204':
+          description: Logged out
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange refresh token for new access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: New access token issued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthTokens' }
+        '401':
+          description: Refresh token invalid or expired
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Settings ──────────────────────────────────────────────────────────────
+
+  /settings:
+    get:
+      tags: [Settings]
+      summary: Get user settings
+      responses:
+        '200':
+          description: User settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppSettings' }
+
+  /settings/income:
+    put:
+      tags: [Settings]
+      summary: Update default take-home pay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [defaultTakeHomePay]
+              properties:
+                defaultTakeHomePay: { type: number }
+      responses:
+        '200':
+          description: Updated settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppSettings' }
+
+  /settings/templates:
+    get:
+      tags: [Settings]
+      summary: List all category templates
+      responses:
+        '200':
+          description: List of category templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CategoryTemplate' }
+    post:
+      tags: [Settings]
+      summary: Create a category template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color, defaultBudgetAmount, defaultSpendLimit, sortOrder]
+              properties:
+                name: { type: string }
+                color: { type: string }
+                defaultBudgetAmount: { type: number }
+                defaultSpendLimit: { type: number }
+                sortOrder: { type: integer }
+      responses:
+        '201':
+          description: Created template
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryTemplate' }
+    put:
+      tags: [Settings]
+      summary: Bulk replace all category templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required: [name, color, defaultBudgetAmount, defaultSpendLimit, sortOrder]
+                properties:
+                  name: { type: string }
+                  color: { type: string }
+                  defaultBudgetAmount: { type: number }
+                  defaultSpendLimit: { type: number }
+                  sortOrder: { type: integer }
+      responses:
+        '200':
+          description: Replaced templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CategoryTemplate' }
+
+  /settings/templates/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [Settings]
+      summary: Update a category template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                color: { type: string }
+                defaultBudgetAmount: { type: number }
+                defaultSpendLimit: { type: number }
+                sortOrder: { type: integer }
+      responses:
+        '200':
+          description: Updated template
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryTemplate' }
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Settings]
+      summary: Delete a category template
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Months ────────────────────────────────────────────────────────────────
+
+  /months:
+    get:
+      tags: [Months]
+      summary: List all month budgets
+      responses:
+        '200':
+          description: All month budgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MonthBudget' }
+
+  /months/{monthKey}:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string, example: '2026-03' }
+    get:
+      tags: [Months]
+      summary: Get a single month budget
+      responses:
+        '200':
+          description: Month budget
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthBudget' }
+        '404':
+          description: Month not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /months/{monthKey}/init:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string, example: '2026-03' }
+    post:
+      tags: [Months]
+      summary: Initialize a month from templates and recurring transactions
+      responses:
+        '201':
+          description: Initialized month budget
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthBudget' }
+        '409':
+          description: Month already initialized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /months/{monthKey}/income:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string, example: '2026-03' }
+    put:
+      tags: [Months]
+      summary: Update take-home pay for a month
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [takeHomePay]
+              properties:
+                takeHomePay: { type: number }
+      responses:
+        '200':
+          description: Updated month budget
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthBudget' }
+        '404':
+          description: Month not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /months/{monthKey}/lock:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string, example: '2026-03' }
+    post:
+      tags: [Months]
+      summary: Lock a month (prevents further edits)
+      responses:
+        '200':
+          description: Locked month budget
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthBudget' }
+        '404':
+          description: Month not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Categories ────────────────────────────────────────────────────────────
+
+  /months/{monthKey}/categories:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string, example: '2026-03' }
+    get:
+      tags: [Categories]
+      summary: List categories for a month
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      summary: Add a category to a month
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color, budgetAmount, spendLimit, sortOrder]
+              properties:
+                name: { type: string }
+                color: { type: string }
+                budgetAmount: { type: number }
+                spendLimit: { type: number }
+                sortOrder: { type: integer }
+      responses:
+        '201':
+          description: Created category
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+  /months/{monthKey}/categories/{id}:
+    parameters:
+      - name: monthKey
+        in: path
+        required: true
+        schema: { type: string }
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [Categories]
+      summary: Update a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                color: { type: string }
+                budgetAmount: { type: number }
+                spendLimit: { type: number }
+                sortOrder: { type: integer }
+      responses:
+        '200':
+          description: Updated category
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Categories]
+      summary: Delete a category
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Transactions ──────────────────────────────────────────────────────────
+
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: List transactions with optional filters
+      parameters:
+        - name: monthKey
+          in: query
+          schema: { type: string }
+        - name: categoryId
+          in: query
+          schema: { type: integer }
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [expense, income, transfer]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [confirmed, pending]
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Transaction' }
+    post:
+      tags: [Transactions]
+      summary: Create a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, amount, type, date, monthKey, status]
+              properties:
+                name: { type: string }
+                amount: { type: number }
+                type:
+                  type: string
+                  enum: [expense, income, transfer]
+                categoryId: { type: integer, nullable: true }
+                accountId: { type: integer, nullable: true }
+                toAccountId: { type: integer, nullable: true }
+                date: { type: string, format: date }
+                monthKey: { type: string }
+                recurringId: { type: integer, nullable: true }
+                status:
+                  type: string
+                  enum: [confirmed, pending]
+      responses:
+        '201':
+          description: Created transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+
+  /transactions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [Transactions]
+      summary: Update a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                amount: { type: number }
+                type:
+                  type: string
+                  enum: [expense, income, transfer]
+                categoryId: { type: integer, nullable: true }
+                accountId: { type: integer, nullable: true }
+                toAccountId: { type: integer, nullable: true }
+                date: { type: string, format: date }
+                monthKey: { type: string }
+                status:
+                  type: string
+                  enum: [confirmed, pending]
+      responses:
+        '200':
+          description: Updated transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Transactions]
+      summary: Delete a transaction
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /transactions/{id}/confirm:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Transactions]
+      summary: Confirm a pending transaction
+      responses:
+        '200':
+          description: Confirmed transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /transactions/{id}/dismiss:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    delete:
+      tags: [Transactions]
+      summary: Dismiss (remove) a pending transaction without confirming
+      responses:
+        '204':
+          description: Dismissed
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Recurring Transactions ────────────────────────────────────────────────
+
+  /recurring:
+    get:
+      tags: [Recurring]
+      summary: List all recurring transactions
+      responses:
+        '200':
+          description: List of recurring transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RecurringTransaction' }
+    post:
+      tags: [Recurring]
+      summary: Create a recurring transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, amount, type, categoryId, dayOfMonth, isActive]
+              properties:
+                name: { type: string }
+                amount: { type: number }
+                type:
+                  type: string
+                  enum: [expense, income]
+                categoryId: { type: integer }
+                dayOfMonth: { type: integer, minimum: 1, maximum: 31 }
+                isActive: { type: boolean }
+      responses:
+        '201':
+          description: Created recurring transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecurringTransaction' }
+
+  /recurring/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [Recurring]
+      summary: Update a recurring transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                amount: { type: number }
+                type:
+                  type: string
+                  enum: [expense, income]
+                categoryId: { type: integer }
+                dayOfMonth: { type: integer, minimum: 1, maximum: 31 }
+                isActive: { type: boolean }
+      responses:
+        '200':
+          description: Updated recurring transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecurringTransaction' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Recurring]
+      summary: Delete a recurring transaction
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─── Accounts ──────────────────────────────────────────────────────────────
+
+  /accounts:
+    get:
+      tags: [Accounts]
+      summary: List all accounts
+      responses:
+        '200':
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Account' }
+    post:
+      tags: [Accounts]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color, accountType, initialBalance]
+              properties:
+                name: { type: string }
+                color: { type: string }
+                accountType:
+                  type: string
+                  enum: [checking, savings, brokerage, '401k', ira, roth_ira, hsa, other]
+                initialBalance: { type: number }
+      responses:
+        '201':
+          description: Created account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+
+  /accounts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [Accounts]
+      summary: Update an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                color: { type: string }
+                accountType:
+                  type: string
+                  enum: [checking, savings, brokerage, '401k', ira, roth_ira, hsa, other]
+                initialBalance: { type: number }
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Accounts]
+      summary: Delete an account
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }

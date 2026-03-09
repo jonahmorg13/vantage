@@ -7,7 +7,7 @@ export function useMonthBudget(monthKey?: string): MonthBudget | null {
   const key = monthKey ?? state.currentMonthKey
 
   return useMemo(
-    () => state.monthBudgets.find(m => m.monthKey === key) ?? null,
+    () => state.monthBudgets.find((m) => m.monthKey === key) ?? null,
     [state.monthBudgets, key]
   )
 }
