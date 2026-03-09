@@ -25,6 +25,7 @@ export type AppAction =
   | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
+  | { type: 'REPLACE_TEMPLATES'; templates: Omit<CategoryTemplate, 'id'>[] }
   // Account actions
   | { type: 'ADD_ACCOUNT'; account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'> }
   | { type: 'UPDATE_ACCOUNT'; id: number; updates: Partial<Account> }
@@ -270,6 +271,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           categoryTemplates: state.settings.categoryTemplates.filter(t => t.id !== action.id),
         },
       }
+
+    case 'REPLACE_TEMPLATES': {
+      const startId = state.nextIds.categoryTemplate
+      const newTemplates = action.templates.map((t, i) => ({ ...t, id: startId + i }))
+      return {
+        ...state,
+        settings: { ...state.settings, categoryTemplates: newTemplates },
+        nextIds: { ...state.nextIds, categoryTemplate: startId + newTemplates.length },
+      }
+    }
 
     case 'ADD_ACCOUNT': {
       const newId = state.nextIds.account

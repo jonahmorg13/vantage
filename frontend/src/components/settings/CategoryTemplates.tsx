@@ -3,13 +3,15 @@ import { useAppContext } from '../../context/AppContext'
 import { Panel } from '../ui/Panel'
 import { Button } from '../ui/Button'
 import { Modal, FormGroup, FormInput } from '../ui/Modal'
-import { formatCurrency } from '../../utils/format'
+import { formatCurrency, formatMonthDisplay } from '../../utils/format'
 import type { CategoryTemplate } from '../../types'
 
 export function CategoryTemplates() {
   const { state, dispatch } = useAppContext()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<CategoryTemplate | null>(null)
+  const [copyModalOpen, setCopyModalOpen] = useState(false)
+  const [selectedMonthKey, setSelectedMonthKey] = useState('')
 
   const [name, setName] = useState('')
   const [budget, setBudget] = useState('')
@@ -35,7 +37,6 @@ export function CategoryTemplates() {
 
   function handleSave() {
     if (!name.trim()) return
-
     if (editing) {
       dispatch({
         type: 'UPDATE_TEMPLATE',
@@ -62,11 +63,43 @@ export function CategoryTemplates() {
     setModalOpen(false)
   }
 
+  function openCopyModal() {
+    const sorted = [...state.monthBudgets].sort((a, b) => b.monthKey.localeCompare(a.monthKey))
+    setSelectedMonthKey(sorted[0]?.monthKey ?? '')
+    setCopyModalOpen(true)
+  }
+
+  function handleCopyFromMonth() {
+    const month = state.monthBudgets.find(m => m.monthKey === selectedMonthKey)
+    if (!month) return
+    dispatch({
+      type: 'REPLACE_TEMPLATES',
+      templates: month.categories.map((c, i) => ({
+        name: c.name,
+        color: c.color,
+        defaultBudgetAmount: c.budgetAmount,
+        defaultSpendLimit: c.spendLimit,
+        sortOrder: i,
+      })),
+    })
+    setCopyModalOpen(false)
+  }
+
+  const sortedMonths = [...state.monthBudgets].sort((a, b) => b.monthKey.localeCompare(a.monthKey))
+  const previewMonth = state.monthBudgets.find(m => m.monthKey === selectedMonthKey)
+
   return (
     <>
       <Panel
         title="Category Templates"
-        action={<Button onClick={() => openModal()}>+ Add Template</Button>}
+        action={
+          <div className="flex gap-2">
+            {state.monthBudgets.length > 0 && (
+              <Button variant="secondary" onClick={openCopyModal}>Copy from Month</Button>
+            )}
+            <Button onClick={() => openModal()}>+ Add Template</Button>
+          </div>
+        }
       >
         <div>
           <p className="text-xs text-text3 px-6 py-4">
@@ -119,6 +152,7 @@ export function CategoryTemplates() {
         </div>
       </Panel>
 
+      {/* Edit / Add template modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Template' : 'Add Template'}>
         <FormGroup label="Category Name">
           <FormInput type="text" placeholder="e.g. Groceries" value={name} onChange={e => setName(e.target.value)} />
@@ -137,6 +171,48 @@ export function CategoryTemplates() {
         <div className="flex gap-3 mt-6">
           <Button variant="secondary" onClick={() => setModalOpen(false)} className="flex-1 !py-3">Cancel</Button>
           <Button onClick={handleSave} className="flex-1 !py-3">{editing ? 'Save Changes' : 'Add Template'}</Button>
+        </div>
+      </Modal>
+
+      {/* Copy from month modal */}
+      <Modal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} title="Copy from Month">
+        <p className="text-sm text-text3 mb-5">
+          Replace all current templates with the categories from a past month.
+        </p>
+        <FormGroup label="Month">
+          <select
+            value={selectedMonthKey}
+            onChange={e => setSelectedMonthKey(e.target.value)}
+            className="w-full bg-surface2 border border-border text-text text-sm pl-4 pr-10 py-2.5 rounded-lg focus:outline-none focus:border-accent appearance-none"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+          >
+            {sortedMonths.map(m => (
+              <option key={m.monthKey} value={m.monthKey}>{formatMonthDisplay(m.monthKey)}</option>
+            ))}
+          </select>
+        </FormGroup>
+
+        {/* Preview */}
+        {previewMonth && previewMonth.categories.length > 0 && (
+          <div className="mt-4">
+            <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-2">Preview — {previewMonth.categories.length} categories</div>
+            <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto">
+              {previewMonth.categories.map(c => (
+                <div key={c.id} className="flex items-center gap-3 bg-surface2 rounded-lg px-3 py-2 text-sm">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: c.color }} />
+                  <span className="text-text2 flex-1">{c.name}</span>
+                  <span className="text-text3 font-mono text-xs">{formatCurrency(c.budgetAmount)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-3 mt-6">
+          <Button variant="secondary" onClick={() => setCopyModalOpen(false)} className="flex-1 !py-3">Cancel</Button>
+          <Button variant="danger" onClick={handleCopyFromMonth} className="flex-1 !py-3" disabled={!selectedMonthKey}>
+            Replace Templates
+          </Button>
         </div>
       </Modal>
     </>

@@ -42,7 +42,7 @@ export function AllocationChart() {
                 strokeWidth={0}
                 isAnimationActive={true}
                 animationBegin={0}
-                animationDuration={600}
+                animationDuration={800}
                 animationEasing="ease-out">
                 {isEmpty ? (
                   <Cell fill="var(--color-surface3)" opacity={1} />
@@ -56,57 +56,74 @@ export function AllocationChart() {
                       }
                       onMouseEnter={() => setActiveIndex(i)}
                       onMouseLeave={() => setActiveIndex(null)}
-                      style={{ cursor: "default", outline: "none" }}
+                      style={{
+                        cursor: "default",
+                        outline: "none",
+                        transition: "opacity 0.2s ease",
+                      }}
                     />
                   ))
                 )}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
+
+          {/* Center text — crossfades between default and hover state */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            {activeCat ? (
-              <>
-                <div
-                  className="font-sans text-base font-bold text-center leading-tight px-3"
-                  style={{ color: activeCat.color }}>
-                  {formatCurrency(activeCat.budgetAmount)}
-                </div>
-                <div className="text-xs text-text3 uppercase tracking-[0.1em] mt-1 text-center px-3 leading-tight max-w-[130px] truncate">
-                  {activeCat.name}
-                </div>
-                <div
-                  className="text-xs font-medium mt-1"
-                  style={{ color: activeCat.color }}>
-                  {((activeCat.budgetAmount / totalBudget) * 100).toFixed(1)}%
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="font-sans text-xl font-bold">
-                  {displayTotal}
-                </div>
-                <div className="text-xs text-text3 uppercase tracking-[0.1em] mt-1">
-                  Budgeted
-                </div>
-              </>
-            )}
+            <div
+              key={activeCat ? `cat-${activeCat.id}` : "total"}
+              className="flex flex-col items-center animate-fade-in"
+              style={{ animation: "fadeIn 0.15s ease" }}>
+              {activeCat ? (
+                <>
+                  <div
+                    className="font-sans text-base font-bold text-center leading-tight px-3"
+                    style={{ color: activeCat.color }}>
+                    {formatCurrency(activeCat.budgetAmount)}
+                  </div>
+                  <div className="text-xs text-text3 uppercase tracking-[0.1em] mt-1 text-center px-3 leading-tight max-w-[130px] truncate">
+                    {activeCat.name}
+                  </div>
+                  <div
+                    className="text-xs font-medium mt-1"
+                    style={{ color: activeCat.color }}>
+                    {((activeCat.budgetAmount / totalBudget) * 100).toFixed(1)}%
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="font-sans text-xl font-bold">
+                    {displayTotal}
+                  </div>
+                  <div className="text-xs text-text3 uppercase tracking-[0.1em] mt-1">
+                    Budgeted
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend — staggered fade-in */}
         <div className="flex flex-col gap-3">
           {data.slice(0, 8).map((cat, i) => (
             <div
               key={cat.id}
-              className="flex items-center gap-3 text-sm cursor-default transition-opacity"
+              className="flex items-center gap-3 text-sm cursor-default"
               style={{
                 opacity: activeIndex === null || activeIndex === i ? 1 : 0.4,
+                transition: "opacity 0.2s ease",
+                animation: `fadeIn 0.4s ease both`,
+                animationDelay: `${i * 55}ms`,
               }}
               onMouseEnter={() => setActiveIndex(i)}
               onMouseLeave={() => setActiveIndex(null)}>
               <div
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ background: cat.color }}
+                className="w-2.5 h-2.5 rounded-sm shrink-0 transition-transform duration-200"
+                style={{
+                  background: cat.color,
+                  transform: activeIndex === i ? "scale(1.4)" : "scale(1)",
+                }}
               />
               <span className="text-text2 flex-1">{cat.name}</span>
               <span className="text-text2 text-sm font-medium">

@@ -1,20 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { LayoutDashboard, ArrowLeftRight, Grid3x3, Landmark, TrendingUp, Settings, MoreHorizontal } from "lucide-react";
 import { MonthPicker } from "./MonthPicker";
 import { useCurrentMonth } from "../../hooks/useMonthBudget";
 import { useSpentByCategory } from "../../hooks/useTransactions";
 import { formatCurrency } from "../../utils/format";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: "◉" },
-  { to: "/transactions", label: "Transactions", icon: "⇄" },
-  { to: "/categories", label: "Categories", icon: "▦" },
-  { to: "/accounts", label: "Accounts", icon: "◈" },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
+  { to: "/categories", label: "Categories", icon: Grid3x3 },
+  { to: "/accounts", label: "Accounts", icon: Landmark },
 ];
 
 const overflowItems = [
-  { to: "/future", label: "Future", icon: "∿" },
-  { to: "/settings", label: "Settings", icon: "⚙" },
+  { to: "/future", label: "Future", icon: TrendingUp },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const allNavItems = [...navItems, ...overflowItems];
@@ -31,12 +32,10 @@ export function Sidebar() {
   const totalSpent = Array.from(spentMap.values()).reduce((a, v) => a + v, 0);
   const remaining = totalBudget - totalSpent;
 
-  // Close overflow menu on route change
   useEffect(() => {
     setMoreOpen(false);
   }, [location.pathname]);
 
-  // Close on outside click
   useEffect(() => {
     if (!moreOpen) return;
     function handleClick(e: MouseEvent) {
@@ -72,21 +71,25 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-5">
+        <nav className="flex-1 py-4">
           {allNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-6 py-3 text-sm transition-all duration-150 ${
+                `flex items-center gap-3.5 px-6 py-3 text-sm transition-all duration-150 ${
                   isActive
                     ? "text-accent bg-accent/8 border-r-2 border-accent"
                     : "text-text2 hover:text-text hover:bg-surface2"
                 }`
               }>
-              <span className="text-base">{item.icon}</span>
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  <item.icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
+                  {item.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -121,7 +124,9 @@ export function Sidebar() {
                 isActive ? "text-accent" : "text-text3 hover:text-text"
               }`
             }>
-            <span className="text-2xl">{item.icon}</span>
+            {({ isActive }) => (
+              <item.icon size={24} strokeWidth={isActive ? 2.2 : 1.6} />
+            )}
           </NavLink>
         ))}
 
@@ -132,7 +137,7 @@ export function Sidebar() {
             className={`flex items-center justify-center w-full py-3 transition-all duration-150 ${
               isOverflowActive || moreOpen ? "text-accent" : "text-text3"
             }`}>
-            <span className="text-2xl leading-none tracking-widest">···</span>
+            <MoreHorizontal size={24} strokeWidth={isOverflowActive || moreOpen ? 2.2 : 1.6} />
           </button>
 
           {/* Overflow popup */}
@@ -149,8 +154,12 @@ export function Sidebar() {
                         : "text-text2 hover:text-text hover:bg-surface2"
                     }`
                   }>
-                  <span className="text-base">{item.icon}</span>
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <item.icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>
