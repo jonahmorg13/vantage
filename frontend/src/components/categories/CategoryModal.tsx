@@ -61,7 +61,7 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
           spendLimit: parseFloat(spendLimit) || 0,
           color,
         })
-        showToast('Category updated')
+        showToast('Budget item updated')
       } else {
         categoryRepo.create(state.currentMonthKey, {
           name: name.trim(),
@@ -70,17 +70,17 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
           color,
           sortOrder: 999,
         })
-        showToast('Category added')
+        showToast('Budget item added')
       }
       onClose()
     } catch {
-      showToast('Failed to save category', 'error')
+      showToast('Failed to save budget item', 'error')
     }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={editCategory ? 'Edit Category' : 'Add Category'}>
-      <FormGroup label="Category Name">
+    <Modal open={open} onClose={onClose} title={editCategory ? 'Edit Budget Item' : 'Add Budget Item'}>
+      <FormGroup label="Name">
         <FormInput
           type="text"
           placeholder="e.g. Groceries"
@@ -118,7 +118,7 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
           Cancel
         </Button>
         <Button onClick={handleSave} className="flex-1 !py-3">
-          {editCategory ? 'Save Changes' : 'Save Category'}
+          {editCategory ? 'Save Changes' : 'Add Item'}
         </Button>
       </div>
     </Modal>

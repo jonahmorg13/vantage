@@ -13,11 +13,13 @@ export function RecurringManager() {
   const { recurring: recurringRepo } = useRepositories()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<RecurringTransaction | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [type, setType] = useState<'expense' | 'income'>('expense')
   const [categoryId, setCategoryId] = useState<number>(0)
+  const [accountId, setAccountId] = useState<number>(0)
   const [dayOfMonth, setDayOfMonth] = useState('1')
 
   const templates = state.settings.categoryTemplates
@@ -29,6 +31,7 @@ export function RecurringManager() {
       setAmount(recurring.amount.toString())
       setType(recurring.type)
       setCategoryId(recurring.categoryId)
+      setAccountId(recurring.accountId ?? 0)
       setDayOfMonth(recurring.dayOfMonth.toString())
     } else {
       setEditing(null)
@@ -36,6 +39,7 @@ export function RecurringManager() {
       setAmount('')
       setType('expense')
       setCategoryId(templates[0]?.id ?? 0)
+      setAccountId(0)
       setDayOfMonth('1')
     }
     setModalOpen(true)
@@ -44,12 +48,14 @@ export function RecurringManager() {
   function handleSave() {
     if (!name.trim() || !parseFloat(amount)) return
 
+    const resolvedAccountId = accountId !== 0 ? accountId : undefined
     if (editing) {
       recurringRepo.update(editing.id, {
         name: name.trim(),
         amount: parseFloat(amount),
         type,
         categoryId,
+        accountId: resolvedAccountId,
         dayOfMonth: parseInt(dayOfMonth) || 1,
       })
     } else {
@@ -58,6 +64,7 @@ export function RecurringManager() {
         amount: parseFloat(amount),
         type,
         categoryId,
+        accountId: resolvedAccountId,
         dayOfMonth: parseInt(dayOfMonth) || 1,
         isActive: true,
       })
@@ -90,63 +97,92 @@ export function RecurringManager() {
                   <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
+                  <th className="max-[640px]:hidden px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
+                  <th className="max-[640px]:hidden px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
                     Day
                   </th>
                   <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
                     Active
                   </th>
-                  <th className="px-6 py-3 border-b border-border"></th>
+                  <th className="max-[640px]:hidden px-6 py-3 border-b border-border"></th>
                 </tr>
               </thead>
               <tbody>
                 {state.recurringTransactions.map((r) => (
-                  <tr key={r.id} className="hover:bg-accent/[0.04]">
-                    <td className="px-6 py-3 text-sm border-b border-white/[0.03]">{r.name}</td>
-                    <td
-                      className={`px-6 py-3 text-sm border-b border-white/[0.03] ${r.type === 'income' ? 'text-accent3' : 'text-accent2'}`}
-                    >
-                      {r.type === 'income' ? '+' : ''}
-                      {format(r.amount)}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-text2 border-b border-white/[0.03] capitalize">
-                      {r.type}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-text2 border-b border-white/[0.03]">
-                      {r.dayOfMonth}
-                    </td>
-                    <td className="px-6 py-3 border-b border-white/[0.03]">
-                      <button
-                        onClick={() => recurringRepo.update(r.id, { isActive: !r.isActive })}
-                        className={`text-xs px-2.5 py-1 rounded border cursor-pointer transition-colors ${
-                          r.isActive
-                            ? 'text-accent3 bg-accent3/10 border-accent3/30'
-                            : 'text-text3 bg-surface3 border-border'
-                        }`}
+                  <>
+                    <tr key={r.id} className="hover:bg-accent/[0.04] max-[640px]:cursor-pointer" onClick={() => { if (window.innerWidth < 640) openModal(r) }}>
+                      <td className="px-6 py-3 text-sm max-[640px]:border-b-0 border-b border-white/[0.03] max-w-0 w-full">
+                        <span className="block truncate">{r.name}</span>
+                      </td>
+                      <td
+                        className={`px-6 py-3 text-sm max-[640px]:border-b-0 border-b border-white/[0.03] ${r.type === 'income' ? 'text-accent3' : 'text-accent2'}`}
                       >
-                        {r.isActive ? 'ON' : 'OFF'}
-                      </button>
-                    </td>
-                    <td className="px-6 py-3 border-b border-white/[0.03]">
-                      <div className="flex gap-1.5">
+                        {r.type === 'income' ? '+' : ''}
+                        {format(r.amount)}
+                      </td>
+                      <td className="max-[640px]:hidden px-6 py-3 text-sm text-text2 border-b border-white/[0.03] capitalize">
+                        {r.type}
+                      </td>
+                      <td className="max-[640px]:hidden px-6 py-3 text-sm text-text2 border-b border-white/[0.03]">
+                        {r.dayOfMonth}
+                      </td>
+                      <td className="px-6 py-3 max-[640px]:border-b-0 border-b border-white/[0.03]">
                         <button
-                          onClick={() => openModal(r)}
-                          className="bg-transparent border-none text-text3 cursor-pointer text-sm p-1.5 px-2 rounded transition-all hover:bg-accent/15 hover:text-accent leading-none"
+                          onClick={(e) => { e.stopPropagation(); recurringRepo.update(r.id, { isActive: !r.isActive }) }}
+                          className={`text-xs px-2.5 py-1 rounded border cursor-pointer transition-colors ${
+                            r.isActive
+                              ? 'text-accent3 bg-accent3/10 border-accent3/30'
+                              : 'text-text3 bg-surface3 border-border'
+                          }`}
                         >
-                          ✎
+                          {r.isActive ? 'ON' : 'OFF'}
                         </button>
-                        <button
-                          onClick={() => recurringRepo.delete(r.id)}
-                          className="bg-transparent border-none text-text3 cursor-pointer text-lg p-1 px-2 rounded transition-all hover:bg-danger/15 hover:text-danger leading-none"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="max-[640px]:hidden px-6 py-3 border-b border-white/[0.03]">
+                        {deletingId === r.id ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setDeletingId(null)}
+                              className="text-xs text-text3 bg-surface3 px-2.5 py-1 rounded border border-border hover:bg-surface2 transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => {
+                                recurringRepo.delete(r.id)
+                                setDeletingId(null)
+                              }}
+                              className="text-xs text-danger bg-danger/10 px-2.5 py-1 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => openModal(r)}
+                              className="bg-transparent border-none text-text3 cursor-pointer text-lg p-1.5 px-2 rounded transition-all hover:bg-accent/15 hover:text-accent leading-none"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              onClick={() => setDeletingId(r.id)}
+                              className="bg-transparent border-none text-text3 cursor-pointer text-2xl p-1 px-2 rounded transition-all hover:bg-danger/15 hover:text-danger leading-none"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    <tr className="min-[640px]:hidden hover:bg-accent/[0.04]">
+                      <td colSpan={6} className="px-6 pb-2.5 text-xs text-text3 border-b border-white/[0.03]">
+                        Day {r.dayOfMonth} · <span className="capitalize">{r.type}</span>
+                      </td>
+                    </tr>
+                  </>
                 ))}
               </tbody>
             </table>
@@ -157,7 +193,7 @@ export function RecurringManager() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? 'Edit Recurring' : 'Add Recurring'}
+        title={editing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       >
         <FormGroup label="Name / Description">
           <FormInput
@@ -197,7 +233,7 @@ export function RecurringManager() {
               <option value="income">Income</option>
             </FormSelect>
           </FormGroup>
-          <FormGroup label="Category (Template)">
+          <FormGroup label="Budget Item">
             <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -207,12 +243,24 @@ export function RecurringManager() {
             </FormSelect>
           </FormGroup>
         </div>
+        {state.accounts.length > 0 && (
+          <FormGroup label="Account (optional)">
+            <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+              <option value={0}>None</option>
+              {state.accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </FormSelect>
+          </FormGroup>
+        )}
         <div className="flex gap-3 mt-6">
           <Button variant="secondary" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
             Cancel
           </Button>
           <Button onClick={handleSave} className="flex-1 !py-3">
-            {editing ? 'Save Changes' : 'Add Recurring'}
+            {editing ? 'Save Changes' : 'Add Recurring Transaction'}
           </Button>
         </div>
       </Modal>

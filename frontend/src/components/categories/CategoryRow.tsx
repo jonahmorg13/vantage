@@ -46,14 +46,17 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
 
   return (
     <>
-      <tr className="hover:bg-accent/[0.04]">
+      <tr
+        className="hover:bg-accent/[0.04] cursor-pointer"
+        onClick={() => onEdit(cat)}
+      >
         <td className="px-5 py-3 text-sm border-b-0">
           <div className="flex items-center gap-2.5">
             <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cat.color }} />
             <span>{cat.name}</span>
           </div>
         </td>
-        <td className="px-5 py-3 border-b-0">
+        <td className="px-5 py-3 border-b-0" onClick={(e) => e.stopPropagation()}>
           {readOnly ? (
             <span className="text-text font-mono text-sm">{format(cat.budgetAmount)}</span>
           ) : (
@@ -66,7 +69,7 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
             />
           )}
         </td>
-        <td className="px-5 py-3 border-b-0">
+        <td className="px-5 py-3 border-b-0 max-[640px]:hidden" onClick={(e) => e.stopPropagation()}>
           {readOnly ? (
             <span className="text-text font-mono text-sm">
               {cat.spendLimit > 0 ? format(cat.spendLimit) : '—'}
@@ -87,11 +90,11 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
           {left < 0 ? '-' : ''}
           {format(left)}
         </td>
-        <td className="px-5 py-3 border-b-0">
+        <td className="px-5 py-3 border-b-0 max-[640px]:hidden">
           <StatusPill status={status} />
         </td>
         {!readOnly && (
-          <td className="px-5 py-3 border-b-0">
+          <td className="px-5 py-3 border-b-0 max-[640px]:hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex gap-1.5">
               <button
                 onClick={() => onEdit(cat)}
@@ -102,7 +105,7 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
               </button>
               <button
                 onClick={() => {
-                  if (confirm('Delete this category? Transactions in it will be removed too.')) {
+                  if (confirm('Delete this budget item? Transactions in it will be removed too.')) {
                     dispatch({
                       type: 'DELETE_CATEGORY',
                       monthKey: state.currentMonthKey,
@@ -119,7 +122,7 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
           </td>
         )}
       </tr>
-      <tr>
+      <tr onClick={() => onEdit(cat)} className="cursor-pointer">
         <td colSpan={7} className="px-5 pb-2.5 border-b border-white/[0.03]">
           <ProgressBar
             percentage={pct}

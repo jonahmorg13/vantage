@@ -64,7 +64,7 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
 
     let payload: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>
     if (type === 'transfer') {
-      payload = { ...base, accountId, toAccountId, categoryId: undefined }
+      payload = { ...base, accountId, toAccountId, categoryId: categoryId !== 0 ? categoryId : undefined }
     } else {
       payload = {
         ...base,
@@ -127,40 +127,52 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
       </FormGroup>
 
       {isTransfer ? (
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="From Account">
-            <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-              <option value={0} disabled>
-                Select account
-              </option>
-              {state.accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="From Account">
+              <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+                <option value={0} disabled>
+                  Select account
                 </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
-          <FormGroup label="To Account">
-            <FormSelect
-              value={toAccountId}
-              onChange={(e) => setToAccountId(Number(e.target.value))}
-            >
-              <option value={0} disabled>
-                Select account
-              </option>
-              {state.accounts
-                .filter((a) => a.id !== accountId)
-                .map((a) => (
+                {state.accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}
                   </option>
                 ))}
+              </FormSelect>
+            </FormGroup>
+            <FormGroup label="To Account">
+              <FormSelect
+                value={toAccountId}
+                onChange={(e) => setToAccountId(Number(e.target.value))}
+              >
+                <option value={0} disabled>
+                  Select account
+                </option>
+                {state.accounts
+                  .filter((a) => a.id !== accountId)
+                  .map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+              </FormSelect>
+            </FormGroup>
+          </div>
+          <FormGroup label="Budget Item (optional)">
+            <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+              <option value={0}>None</option>
+              {month?.categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </FormSelect>
           </FormGroup>
-        </div>
+        </>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Category (optional)">
+          <FormGroup label="Budget Item (optional)">
             <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
               <option value={0}>None</option>
               {month?.categories.map((c) => (

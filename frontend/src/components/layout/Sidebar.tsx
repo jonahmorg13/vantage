@@ -17,12 +17,12 @@ import { useCurrency } from '../../hooks/useCurrency'
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { to: '/categories', label: 'Categories', icon: Grid3x3 },
+  { to: '/budget', label: 'Budget', icon: Grid3x3 },
   { to: '/accounts', label: 'Accounts', icon: Landmark },
 ]
 
 const overflowItems = [
-  { to: '/future', label: 'Future', icon: TrendingUp },
+  { to: '/future-projections', label: 'Future Projections', icon: TrendingUp },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 

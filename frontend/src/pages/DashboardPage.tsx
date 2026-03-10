@@ -40,7 +40,7 @@ export function DashboardPage() {
 
   function save() {
     monthRepo.updateIncome(state.currentMonthKey, parseFloat(takeHomePay) || 0)
-    showToast('Take-home pay updated')
+    showToast('Monthly budget updated')
   }
 
   return (
@@ -56,7 +56,7 @@ export function DashboardPage() {
           </div>
         </div>
         <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
-          <div className="text-xs text-text3 tracking-[0.12em] uppercase">Take-Home Pay</div>
+          <div className="text-xs text-text3 tracking-[0.12em] uppercase">Monthly Budget</div>
           {isPastMonth ? (
             <div className="font-mono text-2xl font-medium text-text3">
               {format(month.takeHomePay)}

@@ -38,6 +38,7 @@ export interface RecurringTransaction {
   amount: number
   type: 'expense' | 'income'
   categoryId: number
+  accountId?: number
   dayOfMonth: number
   isActive: boolean
   createdAt: string
@@ -50,6 +51,7 @@ export interface Account {
   color: string
   accountType: 'checking' | 'savings' | 'brokerage' | '401k' | 'ira' | 'roth_ira' | 'hsa' | 'other'
   initialBalance: number
+  isDefault?: boolean
   createdAt: string
   updatedAt: string
 }

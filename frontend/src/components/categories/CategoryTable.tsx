@@ -43,12 +43,12 @@ export function CategoryTable({ onEdit, readOnly }: CategoryTableProps) {
         <thead>
           <tr>
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
-              Category
+              Item
             </th>
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
               Budget $
             </th>
-            <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
+            <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap max-[640px]:hidden">
               Limit
             </th>
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
@@ -57,10 +57,10 @@ export function CategoryTable({ onEdit, readOnly }: CategoryTableProps) {
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
               Left
             </th>
-            <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
+            <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap max-[640px]:hidden">
               Status
             </th>
-            {!readOnly && <th className="px-5 py-3 border-b border-border"></th>}
+            {!readOnly && <th className="px-5 py-3 border-b border-border max-[640px]:hidden"></th>}
           </tr>
         </thead>
         <tbody>

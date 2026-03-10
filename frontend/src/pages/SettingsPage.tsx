@@ -1,7 +1,6 @@
 import { IncomeSettings } from '../components/settings/IncomeSettings'
 import { CurrencySettings } from '../components/settings/CurrencySettings'
 import { CategoryTemplates } from '../components/settings/CategoryTemplates'
-import { RecurringManager } from '../components/settings/RecurringManager'
 
 export function SettingsPage() {
   return (
@@ -11,7 +10,6 @@ export function SettingsPage() {
         <IncomeSettings />
         <CurrencySettings />
         <CategoryTemplates />
-        <RecurringManager />
       </div>
     </div>
   )

@@ -81,6 +81,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           amount: r.amount,
           type: r.type,
           categoryId: r.categoryId,
+          accountId: r.accountId,
           date: `${action.monthKey}-${String(r.dayOfMonth).padStart(2, '0')}`,
           monthKey: action.monthKey,
           recurringId: r.id,
@@ -228,6 +229,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             amount: newRecurring.amount,
             type: newRecurring.type,
             categoryId: newRecurring.categoryId,
+            accountId: newRecurring.accountId,
             date: `${state.currentMonthKey}-${String(newRecurring.dayOfMonth).padStart(2, '0')}`,
             monthKey: state.currentMonthKey,
             recurringId: newId,
@@ -341,7 +343,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ),
       }
 
-    case 'DELETE_ACCOUNT':
+    case 'DELETE_ACCOUNT': {
+      if (state.accounts.find((a) => a.id === action.id)?.isDefault) return state
       return {
         ...state,
         accounts: state.accounts.filter((a) => a.id !== action.id),
@@ -353,6 +356,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           return Object.keys(updates).length > 0 ? { ...t, ...updates } : t
         }),
       }
+    }
 
     case 'LOAD_STATE':
       return action.state

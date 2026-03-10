@@ -30,7 +30,7 @@ export function RecentTransactions() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] max-[900px]:grid-cols-[130px_1fr_100px]"
+              className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] max-[900px]:grid-cols-[130px_1fr_100px] max-[540px]:grid-cols-[12px_1fr_90px]"
             >
               <Skeleton height={24} borderRadius={6} />
               <Skeleton height={14} />
@@ -89,19 +89,23 @@ export function RecentTransactions() {
             return (
               <div
                 key={tx.id}
-                className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] hover:bg-accent/[0.04] transition-colors animate-fade-in max-[900px]:grid-cols-[130px_1fr_100px]"
+                className="grid grid-cols-[160px_1fr_120px_120px] items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] hover:bg-accent/[0.04] transition-colors animate-fade-in max-[900px]:grid-cols-[130px_1fr_100px] max-[540px]:grid-cols-[12px_1fr_90px]"
               >
-                <div>
-                  <span className="inline-flex items-center gap-2 text-xs text-text2 bg-surface2 px-2.5 py-1 rounded border border-border max-w-full overflow-hidden">
+                <div className="overflow-hidden">
+                  <span className="hidden min-[540px]:inline-flex items-center gap-2 text-xs text-text2 bg-surface2 px-2.5 py-1 rounded border border-border max-w-full overflow-hidden">
                     <span
                       className="inline-block w-2 h-2 rounded-full shrink-0"
                       style={{ background: labelColor }}
                     />
                     <span className="truncate">{labelText}</span>
                   </span>
+                  <span
+                    className="min-[540px]:hidden inline-block w-3 h-3 rounded-full"
+                    style={{ background: labelColor }}
+                  />
                 </div>
-                <div className="text-sm text-text">{tx.name}</div>
-                <div className={`text-sm text-right font-medium ${amountColor}`}>
+                <div className="text-sm text-text truncate min-w-0">{tx.name}</div>
+                <div className={`text-sm text-right font-medium tabular-nums ${amountColor}`}>
                   {amountPrefix}
                   {format(tx.amount)}
                 </div>

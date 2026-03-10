@@ -57,7 +57,7 @@ export function SummaryCards() {
       <Card accentColor="var(--color-accent)">
         <CardLabel>Total Budget</CardLabel>
         <CardValue>{format(totalBudget)}</CardValue>
-        <CardSub>{((totalBudget / month.takeHomePay) * 100).toFixed(1)}% of take-home</CardSub>
+        <CardSub>{((totalBudget / month.takeHomePay) * 100).toFixed(1)}% of budget</CardSub>
       </Card>
 
       <Card accentColor="var(--color-accent4)">
@@ -95,7 +95,7 @@ export function SummaryCards() {
             {unallocated < 0 ? '-' : ''}
             {format(Math.abs(unallocated))}
           </CardValue>
-          <CardSub>{((unallocated / month.takeHomePay) * 100).toFixed(1)}% of take-home</CardSub>
+          <CardSub>{((unallocated / month.takeHomePay) * 100).toFixed(1)}% of budget</CardSub>
         </Card>
       )}
     </div>

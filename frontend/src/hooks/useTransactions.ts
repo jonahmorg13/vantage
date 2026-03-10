@@ -63,8 +63,8 @@ export function useSpentByCategory(monthKey?: string): Map<number, number> {
         (t) =>
           t.monthKey === key &&
           t.status === 'confirmed' &&
-          t.type === 'expense' &&
-          t.categoryId != null
+          t.categoryId != null &&
+          (t.type === 'expense' || t.type === 'transfer')
       )
       .forEach((t) => {
         const cid = t.categoryId!

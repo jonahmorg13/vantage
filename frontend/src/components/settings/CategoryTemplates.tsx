@@ -92,7 +92,7 @@ export function CategoryTemplates() {
   return (
     <>
       <Panel
-        title="Category Templates"
+        title="Budget Templates"
         action={
           <div className="flex gap-2">
             {state.monthBudgets.length > 0 && (
@@ -104,11 +104,12 @@ export function CategoryTemplates() {
           </div>
         }
       >
-        <div>
+        <div className="overflow-auto">
           <p className="text-xs text-text3 px-6 py-4">
             These templates are used when starting a new month. Changes here only affect future
             months or months you haven't visited before.
           </p>
+
           <table className="w-full border-collapse">
             <thead>
               <tr>
@@ -166,9 +167,9 @@ export function CategoryTemplates() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? 'Edit Template' : 'Add Template'}
+        title={editing ? 'Edit Budget Template' : 'Add Budget Template'}
       >
-        <FormGroup label="Category Name">
+        <FormGroup label="Name">
           <FormInput
             type="text"
             placeholder="e.g. Groceries"
@@ -217,7 +218,7 @@ export function CategoryTemplates() {
       {/* Copy from month modal */}
       <Modal open={copyModalOpen} onClose={() => setCopyModalOpen(false)} title="Copy from Month">
         <p className="text-sm text-text3 mb-5">
-          Replace all current templates with the categories from a past month.
+          Replace all current budget templates with the items from a past month.
         </p>
         <FormGroup label="Month">
           <select
@@ -242,7 +243,7 @@ export function CategoryTemplates() {
         {previewMonth && previewMonth.categories.length > 0 && (
           <div className="mt-4">
             <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-2">
-              Preview — {previewMonth.categories.length} categories
+              Preview — {previewMonth.categories.length} items
             </div>
             <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto">
               {previewMonth.categories.map((c) => (

@@ -207,11 +207,11 @@ export function AccountsPage() {
               {format(Math.abs(totalNetWorth))}
             </div>
           </div>
-          <div className="bg-surface border border-border rounded-xl px-5 py-4">
+          <div className="hidden sm:block bg-surface border border-border rounded-xl px-5 py-4">
             <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">Accounts</div>
             <div className="font-mono text-2xl font-bold text-accent">{accounts.length}</div>
           </div>
-          <div className="bg-surface border border-border rounded-xl px-5 py-4">
+          <div className="hidden sm:block bg-surface border border-border rounded-xl px-5 py-4">
             <div className="text-xs text-text3 uppercase tracking-[0.1em] mb-1">
               Total Transactions
             </div>
@@ -248,13 +248,15 @@ export function AccountsPage() {
                     >
                       Edit
                     </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => deleteAccount(account.id)}
-                      className="text-xs py-1.5 px-3"
-                    >
-                      Delete
-                    </Button>
+                    {!account.isDefault && (
+                      <Button
+                        variant="danger"
+                        onClick={() => deleteAccount(account.id)}
+                        className="text-xs py-1.5 px-3"
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 }
               >

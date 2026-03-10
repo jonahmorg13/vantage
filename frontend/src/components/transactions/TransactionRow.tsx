@@ -58,14 +58,15 @@ export function TransactionRow({
 
   return (
     <div
-      className={`group grid items-center gap-3 px-4 py-3.5 border-b border-white/[0.03] transition-colors animate-fade-in ${
+      onClick={() => !confirmingDelete && onEdit(tx)}
+      className={`group grid items-center gap-3 px-4 py-3.5 border-b border-white/[0.03] transition-colors animate-fade-in cursor-pointer ${
         showCheckbox
           ? 'grid-cols-[28px_160px_1fr_110px_110px_auto] max-[900px]:grid-cols-[28px_20px_1fr_88px_auto]'
           : 'grid-cols-[160px_1fr_110px_110px_auto] max-[900px]:grid-cols-[20px_1fr_88px_auto]'
       } ${isSelected ? 'bg-accent/[0.07]' : confirmingDelete ? 'bg-danger/[0.05]' : 'hover:bg-accent/[0.04]'}`}
     >
       {showCheckbox && (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <Checkbox checked={isSelected} onChange={onToggle} />
         </div>
       )}
@@ -93,7 +94,7 @@ export function TransactionRow({
       <div className="text-xs text-text3 text-right max-[900px]:hidden">{formatDate(tx.date)}</div>
 
       {/* Actions / confirm state */}
-      <div className="flex gap-1 justify-end items-center">
+      <div className="flex gap-1 justify-end items-center" onClick={(e) => e.stopPropagation()}>
         {confirmingDelete ? (
           <>
             <button

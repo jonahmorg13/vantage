@@ -8,6 +8,7 @@ import { TransactionFilters } from '../components/transactions/TransactionFilter
 import { TransactionList } from '../components/transactions/TransactionList'
 import { TransactionModal } from '../components/transactions/TransactionModal'
 import { PendingRecurring } from '../components/transactions/PendingRecurring'
+import { RecurringManager } from '../components/settings/RecurringManager'
 import type { Transaction } from '../types'
 
 export function TransactionsPage() {
@@ -141,6 +142,10 @@ export function TransactionsPage() {
       </Panel>
 
       <TransactionModal open={modalOpen} onClose={handleClose} editTransaction={editTx} />
+
+      <div className="mt-8">
+        <RecurringManager />
+      </div>
 
       {/* Mobile FAB */}
       <button

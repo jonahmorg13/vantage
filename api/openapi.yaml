@@ -105,9 +105,10 @@ components:
 
     AppSettings:
       type: object
-      required: [defaultTakeHomePay, categoryTemplates]
+      required: [defaultTakeHomePay, currencySymbol, categoryTemplates]
       properties:
         defaultTakeHomePay: { type: number }
+        currencySymbol: { type: string, example: '$' }
         categoryTemplates:
           type: array
           items: { $ref: '#/components/schemas/CategoryTemplate' }
@@ -256,6 +257,26 @@ paths:
               required: [defaultTakeHomePay]
               properties:
                 defaultTakeHomePay: { type: number }
+      responses:
+        '200':
+          description: Updated settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppSettings' }
+
+  /settings/currency:
+    put:
+      tags: [Settings]
+      summary: Update currency symbol
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currencySymbol]
+              properties:
+                currencySymbol: { type: string, example: '$' }
       responses:
         '200':
           description: Updated settings

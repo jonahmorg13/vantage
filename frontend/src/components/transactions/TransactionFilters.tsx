@@ -36,7 +36,7 @@ export function TransactionFilters({
         }
         className="!w-52"
       >
-        <option value="">All Categories</option>
+        <option value="">All Budget Items</option>
         {month?.categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}

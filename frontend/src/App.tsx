@@ -25,9 +25,9 @@ function App() {
                   <Routes>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/transactions" element={<TransactionsPage />} />
-                    <Route path="/categories" element={<CategoriesPage />} />
+                    <Route path="/budget" element={<CategoriesPage />} />
                     <Route path="/accounts" element={<AccountsPage />} />
-                    <Route path="/future" element={<FuturePage />} />
+                    <Route path="/future-projections" element={<FuturePage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                   </Routes>
                 </main>
