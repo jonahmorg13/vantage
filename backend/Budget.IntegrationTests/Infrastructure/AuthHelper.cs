@@ -70,7 +70,7 @@ public static class AuthHelper
         BudgetApiFactory factory, string email, string password)
     {
         var client = factory.CreateClient();
-        var response = await client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = email,
             Password = password

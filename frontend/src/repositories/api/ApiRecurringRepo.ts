@@ -17,7 +17,7 @@ export class ApiRecurringRepo implements IRecurringRepository {
   async create(
     data: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<RecurringTransaction> {
-    const recurring = await this.client.post<RecurringTransaction>('/recurring', data)
+    const recurring = await this.client.post<RecurringTransaction>('/api/recurring', data)
     this.dispatch({ type: 'ADD_RECURRING', recurring })
 
     // Backend creates a pending transaction for the current month — re-fetch to sync
@@ -25,8 +25,8 @@ export class ApiRecurringRepo implements IRecurringRepository {
       const monthKey = getCurrentMonthKey()
       try {
         const [month, transactions] = await Promise.all([
-          this.client.get<MonthBudget>(`/months/${monthKey}`),
-          this.client.get<Transaction[]>(`/transactions?monthKey=${monthKey}`),
+          this.client.get<MonthBudget>(`/api/months/${monthKey}`),
+          this.client.get<Transaction[]>(`/api/transactions?monthKey=${monthKey}`),
         ])
         this.dispatch({ type: 'SET_MONTH_DATA', month, transactions })
       } catch {
@@ -38,12 +38,12 @@ export class ApiRecurringRepo implements IRecurringRepository {
   }
 
   async update(id: number, data: Partial<RecurringTransaction>): Promise<void> {
-    const recurring = await this.client.put<RecurringTransaction>(`/recurring/${id}`, data)
+    const recurring = await this.client.put<RecurringTransaction>(`/api/recurring/${id}`, data)
     this.dispatch({ type: 'UPDATE_RECURRING', id, updates: recurring })
   }
 
   async delete(id: number): Promise<void> {
-    await this.client.delete(`/recurring/${id}`)
+    await this.client.delete(`/api/recurring/${id}`)
     this.dispatch({ type: 'DELETE_RECURRING', id })
   }
 }

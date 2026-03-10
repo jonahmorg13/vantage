@@ -18,7 +18,7 @@ public class AccountsAuthorizationTests : IClassFixture<BudgetApiFactory>
     {
         var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("/accounts");
+        var response = await client.GetAsync("/api/accounts");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -30,7 +30,7 @@ public class AccountsAuthorizationTests : IClassFixture<BudgetApiFactory>
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", "not-a-valid-jwt");
 
-        var response = await client.GetAsync("/accounts");
+        var response = await client.GetAsync("/api/accounts");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -46,7 +46,7 @@ public class AccountsAuthorizationTests : IClassFixture<BudgetApiFactory>
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", expiredToken);
 
-        var response = await client.GetAsync("/accounts");
+        var response = await client.GetAsync("/api/accounts");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

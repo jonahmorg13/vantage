@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
+const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'api') !== 'local'
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()

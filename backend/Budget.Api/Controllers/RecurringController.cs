@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Budget.Api.Controllers;
 
 [ApiController]
-[Route("recurring")]
+[Route("api/recurring")]
 [Authorize]
 public class RecurringController : ControllerBase
 {

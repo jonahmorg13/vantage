@@ -1,0 +1,5 @@
+/Users/jonah/Source/repos/budget/backend/Budget.Database/bin/Release/Budget.Database.dacpac
+/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Release/Model.xml
+/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Release/refactor.xml
+/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Release/postdeploy.sql
+/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Release/predeploy.sql

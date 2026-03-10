@@ -24,7 +24,7 @@ public class AccountsIsolationTests : IClassFixture<BudgetApiFactory>
 
     private async Task<AccountResponse> CreateAccountAsync(HttpClient client, string name)
     {
-        var response = await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        var response = await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = name,
             Color = "#000000",
@@ -41,7 +41,7 @@ public class AccountsIsolationTests : IClassFixture<BudgetApiFactory>
 
         await CreateAccountAsync(clientA, "User A Account");
 
-        var response = await clientB.GetAsync("/accounts");
+        var response = await clientB.GetAsync("/api/accounts");
         var accounts = await response.Content.ReadFromJsonAsync<List<AccountResponse>>();
         Assert.NotNull(accounts);
         Assert.DoesNotContain(accounts, a => a.Name == "User A Account");
@@ -55,7 +55,7 @@ public class AccountsIsolationTests : IClassFixture<BudgetApiFactory>
 
         var account = await CreateAccountAsync(clientA, "User A Account");
 
-        var response = await clientB.PutAsJsonAsync($"/accounts/{account.Id}", new UpdateAccountRequest
+        var response = await clientB.PutAsJsonAsync($"/api/accounts/{account.Id}", new UpdateAccountRequest
         {
             Name = "Hacked"
         });
@@ -71,7 +71,7 @@ public class AccountsIsolationTests : IClassFixture<BudgetApiFactory>
 
         var account = await CreateAccountAsync(clientA, "User A Account");
 
-        var response = await clientB.DeleteAsync($"/accounts/{account.Id}");
+        var response = await clientB.DeleteAsync($"/api/accounts/{account.Id}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

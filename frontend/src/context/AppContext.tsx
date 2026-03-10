@@ -4,7 +4,7 @@ import { appReducer, type AppAction } from './appReducer'
 import { getCurrentMonthKey } from '../utils/format'
 
 const STORAGE_KEY = 'budget-app-state'
-const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
+const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'api') !== 'local'
 
 const emptyState: AppState = {
   settings: {

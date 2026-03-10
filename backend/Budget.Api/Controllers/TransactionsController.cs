@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Budget.Api.Controllers;
 
 [ApiController]
-[Route("transactions")]
+[Route("api/transactions")]
 [Authorize]
 public class TransactionsController : ControllerBase
 {

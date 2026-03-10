@@ -6,7 +6,7 @@ import type { Repositories } from './types'
 import type { AppAction } from '../context/appReducer'
 import type { Account, RecurringTransaction, Transaction, MonthBudget } from '../types'
 
-const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
+const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'api') !== 'local'
 
 const RepositoryContext = createContext<Repositories | null>(null)
 
@@ -62,14 +62,14 @@ function DataHydrator({ repos, dispatch }: { repos: Repositories; dispatch: Reac
     async function loadMonth() {
       try {
         // Try to init the month (creates it + pending transactions on backend)
-        const month = await client.post<MonthBudget>(`/months/${monthKey}/init`)
-        const transactions = await client.get<Transaction[]>(`/transactions?monthKey=${monthKey}`)
+        const month = await client.post<MonthBudget>(`/api/months/${monthKey}/init`)
+        const transactions = await client.get<Transaction[]>(`/api/transactions?monthKey=${monthKey}`)
         dispatch({ type: 'SET_MONTH_DATA', month, transactions })
       } catch {
         // 409 = month already exists, just fetch it
         try {
-          const month = await client.get<MonthBudget>(`/months/${monthKey}`)
-          const transactions = await client.get<Transaction[]>(`/transactions?monthKey=${monthKey}`)
+          const month = await client.get<MonthBudget>(`/api/months/${monthKey}`)
+          const transactions = await client.get<Transaction[]>(`/api/transactions?monthKey=${monthKey}`)
           dispatch({ type: 'SET_MONTH_DATA', month, transactions })
         } catch {
           // Month may not exist yet if user has no data

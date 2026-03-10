@@ -3,8 +3,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args: {}
     ports:
       - "3000:80"
+    depends_on:
+      - backend
     restart: unless-stopped
 
   backend:
@@ -12,7 +15,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "5000:8080"
+      - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=BudgetApp_Docker;User Id=sa;Password=K5ev6Ce32BHLDymUFzTV;TrustServerCertificate=true
@@ -20,12 +23,12 @@ services:
       - Jwt__Issuer=BudgetApp
       - Jwt__Audience=BudgetApp
     depends_on:
-      sqlserver:
-        condition: service_healthy
+      - sqlserver
     restart: unless-stopped
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
     ports:
       - "1444:1433"
     environment:
@@ -33,12 +36,6 @@ services:
       - MSSQL_SA_PASSWORD=K5ev6Ce32BHLDymUFzTV
     volumes:
       - sqlserver-docker-data:/var/opt/mssql
-    healthcheck:
-      test: /opt/mssql-tools*/bin/sqlcmd -S localhost -U sa -P "K5ev6Ce32BHLDymUFzTV" -Q "SELECT 1" -b -o /dev/null
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
     restart: unless-stopped
 
 volumes:

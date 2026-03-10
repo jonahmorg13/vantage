@@ -26,7 +26,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.GetAsync("/settings");
+        var response = await client.GetAsync("/api/settings");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var settings = await response.Content.ReadFromJsonAsync<AppSettingsResponse>();
@@ -41,7 +41,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PutAsJsonAsync("/settings/income", new UpdateIncomeRequest
+        var response = await client.PutAsJsonAsync("/api/settings/income", new UpdateIncomeRequest
         {
             DefaultTakeHomePay = 5000
         });
@@ -56,7 +56,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PutAsJsonAsync("/settings/currency", new UpdateCurrencyRequest
+        var response = await client.PutAsJsonAsync("/api/settings/currency", new UpdateCurrencyRequest
         {
             CurrencySymbol = "€"
         });
@@ -71,7 +71,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        var response = await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Groceries",
             Color = "#00AA00",
@@ -91,16 +91,16 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, DefaultSpendLimit = 1500, SortOrder = 0
         });
-        await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, DefaultSpendLimit = 500, SortOrder = 1
         });
 
-        var response = await client.GetAsync("/settings/templates");
+        var response = await client.GetAsync("/api/settings/templates");
         var templates = await response.Content.ReadFromJsonAsync<List<CategoryTemplateResponse>>();
         Assert.Equal(2, templates!.Count);
     }
@@ -111,13 +111,13 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
         var client = await CreateClientAsync();
 
         // Create initial
-        await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Old", Color = "#000", DefaultBudgetAmount = 100, DefaultSpendLimit = 100, SortOrder = 0
         });
 
         // Bulk replace
-        var response = await client.PutAsJsonAsync("/settings/templates", new List<CreateCategoryTemplateRequest>
+        var response = await client.PutAsJsonAsync("/api/settings/templates", new List<CreateCategoryTemplateRequest>
         {
             new() { Name = "New1", Color = "#111", DefaultBudgetAmount = 200, DefaultSpendLimit = 200, SortOrder = 0 },
             new() { Name = "New2", Color = "#222", DefaultBudgetAmount = 300, DefaultSpendLimit = 300, SortOrder = 1 }
@@ -134,13 +134,13 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        var createResponse = await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Utilities", Color = "#0000FF", DefaultBudgetAmount = 200, DefaultSpendLimit = 250, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryTemplateResponse>();
 
-        var response = await client.PutAsJsonAsync($"/settings/templates/{created!.Id}", new UpdateCategoryTemplateRequest
+        var response = await client.PutAsJsonAsync($"/api/settings/templates/{created!.Id}", new UpdateCategoryTemplateRequest
         {
             Name = "Bills"
         });
@@ -156,7 +156,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PutAsJsonAsync("/settings/templates/99999", new UpdateCategoryTemplateRequest { Name = "X" });
+        var response = await client.PutAsJsonAsync("/api/settings/templates/99999", new UpdateCategoryTemplateRequest { Name = "X" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -166,13 +166,13 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        var createResponse = await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "ToDelete", Color = "#000", DefaultBudgetAmount = 0, DefaultSpendLimit = 0, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryTemplateResponse>();
 
-        var response = await client.DeleteAsync($"/settings/templates/{created!.Id}");
+        var response = await client.DeleteAsync($"/api/settings/templates/{created!.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -182,7 +182,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.DeleteAsync("/settings/templates/99999");
+        var response = await client.DeleteAsync("/api/settings/templates/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

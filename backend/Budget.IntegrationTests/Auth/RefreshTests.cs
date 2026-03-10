@@ -22,7 +22,7 @@ public class RefreshTests : IClassFixture<BudgetApiFactory>
         var email = $"refresh-{Guid.NewGuid()}@test.com";
         var (_, refreshToken) = await AuthHelper.RegisterAndAuthenticateAsync(_factory, email, "ValidPass123");
 
-        var response = await _client.PostAsJsonAsync("/auth/refresh", new RefreshRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest
         {
             RefreshToken = refreshToken
         });
@@ -42,9 +42,9 @@ public class RefreshTests : IClassFixture<BudgetApiFactory>
         var (_, refreshToken) = await AuthHelper.RegisterAndAuthenticateAsync(_factory, email, "ValidPass123");
 
         // Revoke via logout
-        await _client.PostAsJsonAsync("/auth/logout", new LogoutRequest { RefreshToken = refreshToken });
+        await _client.PostAsJsonAsync("/api/auth/logout", new LogoutRequest { RefreshToken = refreshToken });
 
-        var response = await _client.PostAsJsonAsync("/auth/refresh", new RefreshRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest
         {
             RefreshToken = refreshToken
         });
@@ -55,7 +55,7 @@ public class RefreshTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Refresh_NonexistentToken_Returns401()
     {
-        var response = await _client.PostAsJsonAsync("/auth/refresh", new RefreshRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest
         {
             RefreshToken = "nonexistent-token"
         });
@@ -70,13 +70,13 @@ public class RefreshTests : IClassFixture<BudgetApiFactory>
         var (_, refreshToken) = await AuthHelper.RegisterAndAuthenticateAsync(_factory, email, "ValidPass123");
 
         // Use the refresh token to get a new pair
-        await _client.PostAsJsonAsync("/auth/refresh", new RefreshRequest
+        await _client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest
         {
             RefreshToken = refreshToken
         });
 
         // Try to use the old token again - should be revoked
-        var response = await _client.PostAsJsonAsync("/auth/refresh", new RefreshRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest
         {
             RefreshToken = refreshToken
         });

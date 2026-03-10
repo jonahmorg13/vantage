@@ -14,33 +14,33 @@ export class ApiSettingsRepo implements ISettingsRepository {
   }
 
   async updateIncome(takeHomePay: number): Promise<void> {
-    await this.client.put('/settings/income', { defaultTakeHomePay: takeHomePay })
+    await this.client.put('/api/settings/income', { defaultTakeHomePay: takeHomePay })
     this.dispatch({ type: 'UPDATE_SETTINGS', defaultTakeHomePay: takeHomePay })
   }
 
   async createTemplate(data: Omit<CategoryTemplate, 'id'>): Promise<CategoryTemplate> {
-    const template = await this.client.post<CategoryTemplate>('/settings/templates', data)
+    const template = await this.client.post<CategoryTemplate>('/api/settings/templates', data)
     this.dispatch({ type: 'ADD_TEMPLATE', template })
     return template
   }
 
   async updateTemplate(id: number, data: Partial<CategoryTemplate>): Promise<void> {
-    const template = await this.client.put<CategoryTemplate>(`/settings/templates/${id}`, data)
+    const template = await this.client.put<CategoryTemplate>(`/api/settings/templates/${id}`, data)
     this.dispatch({ type: 'UPDATE_TEMPLATE', id, updates: template })
   }
 
   async deleteTemplate(id: number): Promise<void> {
-    await this.client.delete(`/settings/templates/${id}`)
+    await this.client.delete(`/api/settings/templates/${id}`)
     this.dispatch({ type: 'DELETE_TEMPLATE', id })
   }
 
   async replaceTemplates(templates: Omit<CategoryTemplate, 'id'>[]): Promise<void> {
-    const result = await this.client.put<CategoryTemplate[]>('/settings/templates', templates)
+    const result = await this.client.put<CategoryTemplate[]>('/api/settings/templates', templates)
     this.dispatch({ type: 'REPLACE_TEMPLATES', templates: result })
   }
 
   async updateCurrencySymbol(symbol: string): Promise<void> {
-    await this.client.put('/settings/currency', { currencySymbol: symbol })
+    await this.client.put('/api/settings/currency', { currencySymbol: symbol })
     this.dispatch({ type: 'UPDATE_SETTINGS', currencySymbol: symbol })
   }
 }

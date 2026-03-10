@@ -21,7 +21,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
         var userId = await AuthHelper.SeedUserAsync(_factory, email);
         var client = AuthHelper.CreateAuthenticatedClient(_factory, userId, email);
         var monthKey = $"2026-{Random.Shared.Next(1, 12):D2}";
-        await client.PostAsync($"/months/{monthKey}/init", null);
+        await client.PostAsync($"/api/months/{monthKey}/init", null);
         return (client, monthKey);
     }
 
@@ -30,7 +30,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var response = await client.GetAsync($"/months/{monthKey}/categories");
+        var response = await client.GetAsync($"/api/months/{monthKey}/categories");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var categories = await response.Content.ReadFromJsonAsync<List<CategoryResponse>>();
@@ -42,7 +42,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var response = await client.PostAsJsonAsync($"/months/{monthKey}/categories", new CreateCategoryRequest
+        var response = await client.PostAsJsonAsync($"/api/months/{monthKey}/categories", new CreateCategoryRequest
         {
             Name = "Groceries",
             Color = "#00AA00",
@@ -64,7 +64,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
         var userId = await AuthHelper.SeedUserAsync(_factory, email);
         var client = AuthHelper.CreateAuthenticatedClient(_factory, userId, email);
 
-        var response = await client.PostAsJsonAsync("/months/2099-01/categories", new CreateCategoryRequest
+        var response = await client.PostAsJsonAsync("/api/months/2099-01/categories", new CreateCategoryRequest
         {
             Name = "X", Color = "#000", BudgetAmount = 0, SpendLimit = 0, SortOrder = 0
         });
@@ -77,13 +77,13 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var createResponse = await client.PostAsJsonAsync($"/months/{monthKey}/categories", new CreateCategoryRequest
+        var createResponse = await client.PostAsJsonAsync($"/api/months/{monthKey}/categories", new CreateCategoryRequest
         {
             Name = "Old", Color = "#FF0000", BudgetAmount = 100, SpendLimit = 100, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
-        var response = await client.PutAsJsonAsync($"/months/{monthKey}/categories/{created!.Id}", new UpdateCategoryRequest
+        var response = await client.PutAsJsonAsync($"/api/months/{monthKey}/categories/{created!.Id}", new UpdateCategoryRequest
         {
             Name = "Updated",
             BudgetAmount = 200
@@ -101,7 +101,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var response = await client.PutAsJsonAsync($"/months/{monthKey}/categories/99999", new UpdateCategoryRequest { Name = "X" });
+        var response = await client.PutAsJsonAsync($"/api/months/{monthKey}/categories/99999", new UpdateCategoryRequest { Name = "X" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -111,13 +111,13 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var createResponse = await client.PostAsJsonAsync($"/months/{monthKey}/categories", new CreateCategoryRequest
+        var createResponse = await client.PostAsJsonAsync($"/api/months/{monthKey}/categories", new CreateCategoryRequest
         {
             Name = "ToDelete", Color = "#000", BudgetAmount = 0, SpendLimit = 0, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
-        var response = await client.DeleteAsync($"/months/{monthKey}/categories/{created!.Id}");
+        var response = await client.DeleteAsync($"/api/months/{monthKey}/categories/{created!.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -127,7 +127,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
     {
         var (client, monthKey) = await CreateClientWithMonthAsync();
 
-        var response = await client.DeleteAsync($"/months/{monthKey}/categories/99999");
+        var response = await client.DeleteAsync($"/api/months/{monthKey}/categories/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

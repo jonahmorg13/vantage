@@ -26,7 +26,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var response = await client.GetAsync("/accounts");
+        var response = await client.GetAsync("/api/accounts");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var accounts = await response.Content.ReadFromJsonAsync<List<AccountResponse>>();
@@ -39,7 +39,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var response = await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        var response = await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = "Checking",
             Color = "#4A90D9",
@@ -64,14 +64,14 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = "Savings",
             Color = "#00AA00",
             AccountType = "savings"
         });
 
-        var response = await client.GetAsync("/accounts");
+        var response = await client.GetAsync("/api/accounts");
         var accounts = await response.Content.ReadFromJsonAsync<List<AccountResponse>>();
         Assert.NotNull(accounts);
         Assert.Single(accounts);
@@ -83,7 +83,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        var createResponse = await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = "Old Name",
             Color = "#FF0000",
@@ -91,7 +91,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
         });
         var created = await createResponse.Content.ReadFromJsonAsync<AccountResponse>();
 
-        var response = await client.PutAsJsonAsync($"/accounts/{created!.Id}", new UpdateAccountRequest
+        var response = await client.PutAsJsonAsync($"/api/accounts/{created!.Id}", new UpdateAccountRequest
         {
             Name = "New Name",
             Color = "#00FF00"
@@ -110,7 +110,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        var createResponse = await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = "Account",
             Color = "#FF0000",
@@ -120,7 +120,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
         });
         var created = await createResponse.Content.ReadFromJsonAsync<AccountResponse>();
 
-        var response = await client.PutAsJsonAsync($"/accounts/{created!.Id}", new UpdateAccountRequest
+        var response = await client.PutAsJsonAsync($"/api/accounts/{created!.Id}", new UpdateAccountRequest
         {
             Name = "Updated Account"
         });
@@ -139,7 +139,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var response = await client.PutAsJsonAsync("/accounts/99999", new UpdateAccountRequest
+        var response = await client.PutAsJsonAsync("/api/accounts/99999", new UpdateAccountRequest
         {
             Name = "Nope"
         });
@@ -152,7 +152,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/accounts", new CreateAccountRequest
+        var createResponse = await client.PostAsJsonAsync("/api/accounts", new CreateAccountRequest
         {
             Name = "To Delete",
             Color = "#000000",
@@ -160,12 +160,12 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
         });
         var created = await createResponse.Content.ReadFromJsonAsync<AccountResponse>();
 
-        var response = await client.DeleteAsync($"/accounts/{created!.Id}");
+        var response = await client.DeleteAsync($"/api/accounts/{created!.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         // Verify it's gone
-        var getResponse = await client.GetAsync("/accounts");
+        var getResponse = await client.GetAsync("/api/accounts");
         var accounts = await getResponse.Content.ReadFromJsonAsync<List<AccountResponse>>();
         Assert.NotNull(accounts);
         Assert.DoesNotContain(accounts, a => a.Id == created.Id);
@@ -176,7 +176,7 @@ public class AccountsCrudTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateAuthenticatedClientAsync();
 
-        var response = await client.DeleteAsync("/accounts/99999");
+        var response = await client.DeleteAsync("/api/accounts/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

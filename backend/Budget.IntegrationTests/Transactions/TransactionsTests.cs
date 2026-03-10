@@ -26,7 +26,7 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.GetAsync("/transactions");
+        var response = await client.GetAsync("/api/transactions");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
@@ -38,7 +38,7 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var response = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Grocery Store",
             Amount = 85.50m,
@@ -61,16 +61,16 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "March", Amount = 10, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "April", Amount = 20, Type = "expense", Date = "2026-04-01", MonthKey = "2026-04", Status = "confirmed"
         });
 
-        var response = await client.GetAsync("/transactions?monthKey=2026-03");
+        var response = await client.GetAsync("/api/transactions?monthKey=2026-03");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.Single(transactions!);
         Assert.Equal("March", transactions[0].Name);
@@ -81,16 +81,16 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Salary", Amount = 5000, Type = "income", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Rent", Amount = 1500, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
 
-        var response = await client.GetAsync("/transactions?type=income");
+        var response = await client.GetAsync("/api/transactions?type=income");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.Single(transactions!);
         Assert.Equal("Salary", transactions[0].Name);
@@ -101,16 +101,16 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Coffee Shop", Amount = 5, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
-        await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Grocery Store", Amount = 80, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
 
-        var response = await client.GetAsync("/transactions?search=Coffee");
+        var response = await client.GetAsync("/api/transactions?search=Coffee");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.Single(transactions!);
         Assert.Equal("Coffee Shop", transactions[0].Name);
@@ -121,13 +121,13 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Old", Amount = 10, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
         var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
-        var response = await client.PutAsJsonAsync($"/transactions/{created!.Id}", new UpdateTransactionRequest
+        var response = await client.PutAsJsonAsync($"/api/transactions/{created!.Id}", new UpdateTransactionRequest
         {
             Name = "Updated",
             Amount = 25
@@ -144,7 +144,7 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PutAsJsonAsync("/transactions/99999", new UpdateTransactionRequest { Name = "X" });
+        var response = await client.PutAsJsonAsync("/api/transactions/99999", new UpdateTransactionRequest { Name = "X" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -154,13 +154,13 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "ToDelete", Amount = 10, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
         var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
-        var response = await client.DeleteAsync($"/transactions/{created!.Id}");
+        var response = await client.DeleteAsync($"/api/transactions/{created!.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -170,7 +170,7 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.DeleteAsync("/transactions/99999");
+        var response = await client.DeleteAsync("/api/transactions/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -180,13 +180,13 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "Pending Bill", Amount = 100, Type = "expense", Date = "2026-03-15", MonthKey = "2026-03", Status = "pending"
         });
         var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
-        var response = await client.PostAsync($"/transactions/{created!.Id}/confirm", null);
+        var response = await client.PostAsync($"/api/transactions/{created!.Id}/confirm", null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var confirmed = await response.Content.ReadFromJsonAsync<TransactionResponse>();
@@ -198,18 +198,18 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = "To Dismiss", Amount = 50, Type = "expense", Date = "2026-03-15", MonthKey = "2026-03", Status = "pending"
         });
         var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
-        var response = await client.DeleteAsync($"/transactions/{created!.Id}/dismiss");
+        var response = await client.DeleteAsync($"/api/transactions/{created!.Id}/dismiss");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         // Verify it's gone
-        var getResponse = await client.GetAsync("/transactions");
+        var getResponse = await client.GetAsync("/api/transactions");
         var transactions = await getResponse.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.DoesNotContain(transactions!, t => t.Id == created.Id);
     }
@@ -219,7 +219,7 @@ public class TransactionsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.DeleteAsync("/transactions/99999/dismiss");
+        var response = await client.DeleteAsync("/api/transactions/99999/dismiss");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

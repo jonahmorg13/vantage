@@ -16,9 +16,9 @@ import { ApiSettingsRepo } from './api/ApiSettingsRepo'
 import { ApiMonthRepo } from './api/ApiMonthRepo'
 
 export function createRepositories(dispatch: React.Dispatch<AppAction>): Repositories {
-  const dataSource = import.meta.env.VITE_DATA_SOURCE ?? 'local'
+  const dataSource = import.meta.env.VITE_DATA_SOURCE ?? 'api'
 
-  if (dataSource === 'api') {
+  if (dataSource !== 'local') {
     const client = new ApiClient()
     return {
       transactions: new ApiTransactionRepo(client, dispatch),

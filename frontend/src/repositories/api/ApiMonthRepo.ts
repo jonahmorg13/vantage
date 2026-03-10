@@ -15,23 +15,23 @@ export class ApiMonthRepo implements IMonthRepository {
 
   async get(monthKey: string): Promise<MonthBudget | null> {
     try {
-      return await this.client.get<MonthBudget>(`/months/${monthKey}`)
+      return await this.client.get<MonthBudget>(`/api/months/${monthKey}`)
     } catch {
       return null
     }
   }
 
   async init(monthKey: string): Promise<MonthBudget> {
-    return await this.client.post<MonthBudget>(`/months/${monthKey}/init`)
+    return await this.client.post<MonthBudget>(`/api/months/${monthKey}/init`)
   }
 
   async updateIncome(monthKey: string, takeHomePay: number): Promise<void> {
-    await this.client.put(`/months/${monthKey}/income`, { takeHomePay })
+    await this.client.put(`/api/months/${monthKey}/income`, { takeHomePay })
     this.dispatch({ type: 'UPDATE_MONTH_INCOME', monthKey, takeHomePay })
   }
 
   async lock(monthKey: string): Promise<void> {
-    await this.client.post(`/months/${monthKey}/lock`)
+    await this.client.post(`/api/months/${monthKey}/lock`)
     this.dispatch({ type: 'LOCK_MONTH', monthKey })
   }
 }

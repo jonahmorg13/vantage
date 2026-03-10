@@ -18,7 +18,7 @@ public class LoginTests : IClassFixture<BudgetApiFactory>
 
     private async Task RegisterUserAsync(string email, string password)
     {
-        await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = email,
             Password = password
@@ -31,7 +31,7 @@ public class LoginTests : IClassFixture<BudgetApiFactory>
         var email = UniqueEmail();
         await RegisterUserAsync(email, "ValidPass123");
 
-        var response = await _client.PostAsJsonAsync("/auth/login", new LoginRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
         {
             Email = email,
             Password = "ValidPass123"
@@ -50,7 +50,7 @@ public class LoginTests : IClassFixture<BudgetApiFactory>
         var email = UniqueEmail();
         await RegisterUserAsync(email, "ValidPass123");
 
-        var response = await _client.PostAsJsonAsync("/auth/login", new LoginRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
         {
             Email = email,
             Password = "WrongPassword"
@@ -62,7 +62,7 @@ public class LoginTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Login_NonexistentEmail_Returns401()
     {
-        var response = await _client.PostAsJsonAsync("/auth/login", new LoginRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
         {
             Email = "nonexistent@test.com",
             Password = "ValidPass123"
@@ -74,7 +74,7 @@ public class LoginTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Login_MissingFields_Returns400()
     {
-        var response = await _client.PostAsJsonAsync("/auth/login", new { });
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new { });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

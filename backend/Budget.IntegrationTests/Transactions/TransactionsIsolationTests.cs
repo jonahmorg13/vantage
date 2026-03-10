@@ -23,7 +23,7 @@ public class TransactionsIsolationTests : IClassFixture<BudgetApiFactory>
 
     private async Task<TransactionResponse> CreateTransactionAsync(HttpClient client, string name)
     {
-        var response = await client.PostAsJsonAsync("/transactions", new CreateTransactionRequest
+        var response = await client.PostAsJsonAsync("/api/transactions", new CreateTransactionRequest
         {
             Name = name, Amount = 10, Type = "expense", Date = "2026-03-01", MonthKey = "2026-03", Status = "confirmed"
         });
@@ -38,7 +38,7 @@ public class TransactionsIsolationTests : IClassFixture<BudgetApiFactory>
 
         await CreateTransactionAsync(clientA, "A's Transaction");
 
-        var response = await clientB.GetAsync("/transactions");
+        var response = await clientB.GetAsync("/api/transactions");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.DoesNotContain(transactions!, t => t.Name == "A's Transaction");
     }
@@ -51,7 +51,7 @@ public class TransactionsIsolationTests : IClassFixture<BudgetApiFactory>
 
         var txn = await CreateTransactionAsync(clientA, "A's Transaction");
 
-        var response = await clientB.PutAsJsonAsync($"/transactions/{txn.Id}", new UpdateTransactionRequest { Name = "Hacked" });
+        var response = await clientB.PutAsJsonAsync($"/api/transactions/{txn.Id}", new UpdateTransactionRequest { Name = "Hacked" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -64,7 +64,7 @@ public class TransactionsIsolationTests : IClassFixture<BudgetApiFactory>
 
         var txn = await CreateTransactionAsync(clientA, "A's Transaction");
 
-        var response = await clientB.DeleteAsync($"/transactions/{txn.Id}");
+        var response = await clientB.DeleteAsync($"/api/transactions/{txn.Id}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

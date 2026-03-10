@@ -26,7 +26,7 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.GetAsync("/recurring");
+        var response = await client.GetAsync("/api/recurring");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var recurring = await response.Content.ReadFromJsonAsync<List<RecurringTransactionResponse>>();
@@ -38,7 +38,7 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        var response = await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Netflix",
             Amount = 15.99m,
@@ -61,16 +61,16 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Rent", Amount = 1500, Type = "expense", CategoryId = 1, DayOfMonth = 1, IsActive = true
         });
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Salary", Amount = 5000, Type = "income", CategoryId = 2, DayOfMonth = 15, IsActive = true
         });
 
-        var response = await client.GetAsync("/recurring");
+        var response = await client.GetAsync("/api/recurring");
         var recurring = await response.Content.ReadFromJsonAsync<List<RecurringTransactionResponse>>();
         Assert.Equal(2, recurring!.Count);
     }
@@ -80,13 +80,13 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Old", Amount = 10, Type = "expense", CategoryId = 1, DayOfMonth = 1, IsActive = true
         });
         var created = await createResponse.Content.ReadFromJsonAsync<RecurringTransactionResponse>();
 
-        var response = await client.PutAsJsonAsync($"/recurring/{created!.Id}", new UpdateRecurringTransactionRequest
+        var response = await client.PutAsJsonAsync($"/api/recurring/{created!.Id}", new UpdateRecurringTransactionRequest
         {
             Name = "Updated",
             Amount = 20
@@ -104,7 +104,7 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PutAsJsonAsync("/recurring/99999", new UpdateRecurringTransactionRequest { Name = "X" });
+        var response = await client.PutAsJsonAsync("/api/recurring/99999", new UpdateRecurringTransactionRequest { Name = "X" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -114,13 +114,13 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var createResponse = await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        var createResponse = await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "ToDelete", Amount = 10, Type = "expense", CategoryId = 1, DayOfMonth = 1, IsActive = true
         });
         var created = await createResponse.Content.ReadFromJsonAsync<RecurringTransactionResponse>();
 
-        var response = await client.DeleteAsync($"/recurring/{created!.Id}");
+        var response = await client.DeleteAsync($"/api/recurring/{created!.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -130,7 +130,7 @@ public class RecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.DeleteAsync("/recurring/99999");
+        var response = await client.DeleteAsync("/api/recurring/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

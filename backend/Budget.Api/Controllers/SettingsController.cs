@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Budget.Api.Controllers;
 
 [ApiController]
-[Route("settings")]
+[Route("api/settings")]
 [Authorize]
 public class SettingsController : ControllerBase
 {

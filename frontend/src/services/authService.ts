@@ -42,7 +42,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthTokensResponse> {
-    const res = await fetch(`${BASE_URL}/auth/login`, {
+    const res = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -51,7 +51,7 @@ export const authService = {
   },
 
   async register(email: string, password: string): Promise<AuthTokensResponse> {
-    const res = await fetch(`${BASE_URL}/auth/register`, {
+    const res = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -60,7 +60,7 @@ export const authService = {
   },
 
   async logout(refreshToken: string): Promise<void> {
-    await fetch(`${BASE_URL}/auth/logout`, {
+    await fetch(`${BASE_URL}/api/auth/logout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -70,7 +70,7 @@ export const authService = {
   },
 
   async refresh(refreshToken: string): Promise<AuthTokensResponse> {
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+    const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),

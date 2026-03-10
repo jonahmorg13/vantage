@@ -28,18 +28,18 @@ public class MonthInitRecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Netflix", Amount = 15.99m, Type = "expense", CategoryId = 1, DayOfMonth = 15, IsActive = true
         });
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Salary", Amount = 5000, Type = "income", CategoryId = 2, DayOfMonth = 1, IsActive = true
         });
 
-        await client.PostAsync("/months/2026-03/init", null);
+        await client.PostAsync("/api/months/2026-03/init", null);
 
-        var response = await client.GetAsync("/transactions?monthKey=2026-03&status=pending");
+        var response = await client.GetAsync("/api/transactions?monthKey=2026-03&status=pending");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.Equal(2, transactions!.Count);
         Assert.Contains(transactions, t => t.Name == "Netflix" && t.Date == "2026-03-15");
@@ -51,18 +51,18 @@ public class MonthInitRecurringTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Active", Amount = 10, Type = "expense", CategoryId = 1, DayOfMonth = 1, IsActive = true
         });
-        await client.PostAsJsonAsync("/recurring", new CreateRecurringTransactionRequest
+        await client.PostAsJsonAsync("/api/recurring", new CreateRecurringTransactionRequest
         {
             Name = "Inactive", Amount = 20, Type = "expense", CategoryId = 1, DayOfMonth = 1, IsActive = false
         });
 
-        await client.PostAsync("/months/2026-04/init", null);
+        await client.PostAsync("/api/months/2026-04/init", null);
 
-        var response = await client.GetAsync("/transactions?monthKey=2026-04");
+        var response = await client.GetAsync("/api/transactions?monthKey=2026-04");
         var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
         Assert.Single(transactions!);
         Assert.Equal("Active", transactions[0].Name);

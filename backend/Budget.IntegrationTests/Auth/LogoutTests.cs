@@ -22,7 +22,7 @@ public class LogoutTests : IClassFixture<BudgetApiFactory>
         var email = $"logout-{Guid.NewGuid()}@test.com";
         var (_, refreshToken) = await AuthHelper.RegisterAndAuthenticateAsync(_factory, email, "ValidPass123");
 
-        var response = await _client.PostAsJsonAsync("/auth/logout", new LogoutRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/logout", new LogoutRequest
         {
             RefreshToken = refreshToken
         });
@@ -33,7 +33,7 @@ public class LogoutTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Logout_InvalidRefreshToken_Returns204()
     {
-        var response = await _client.PostAsJsonAsync("/auth/logout", new LogoutRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/logout", new LogoutRequest
         {
             RefreshToken = "invalid-token"
         });

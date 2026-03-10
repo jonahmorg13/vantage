@@ -21,7 +21,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Register_ValidCredentials_Returns201WithTokens()
     {
-        var response = await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = UniqueEmail(),
             Password = "ValidPass123"
@@ -38,13 +38,13 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     public async Task Register_DuplicateEmail_Returns409()
     {
         var email = UniqueEmail();
-        await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = email,
             Password = "ValidPass123"
         });
 
-        var response = await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = email,
             Password = "ValidPass123"
@@ -56,7 +56,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Register_MissingEmail_Returns400()
     {
-        var response = await _client.PostAsJsonAsync("/auth/register", new { Password = "ValidPass123" });
+        var response = await _client.PostAsJsonAsync("/api/auth/register", new { Password = "ValidPass123" });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -64,7 +64,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Register_PasswordTooShort_Returns400()
     {
-        var response = await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = UniqueEmail(),
             Password = "short"
@@ -76,7 +76,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Register_InvalidEmailFormat_Returns400()
     {
-        var response = await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var response = await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = "not-an-email",
             Password = "ValidPass123"
@@ -89,7 +89,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
     public async Task Register_ReturnedTokens_WorkForAuthenticatedEndpoints()
     {
         var email = UniqueEmail();
-        var registerResponse = await _client.PostAsJsonAsync("/auth/register", new RegisterRequest
+        var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
         {
             Email = email,
             Password = "ValidPass123"
@@ -101,7 +101,7 @@ public class RegisterTests : IClassFixture<BudgetApiFactory>
         authenticatedClient.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens!.AccessToken);
 
-        var accountsResponse = await authenticatedClient.GetAsync("/accounts");
+        var accountsResponse = await authenticatedClient.GetAsync("/api/accounts");
         Assert.Equal(HttpStatusCode.OK, accountsResponse.StatusCode);
     }
 }

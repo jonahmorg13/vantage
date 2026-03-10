@@ -133,7 +133,7 @@ security:
 paths:
   # ─── Auth ──────────────────────────────────────────────────────────────────
 
-  /auth/register:
+  /api/auth/register:
     post:
       tags: [Auth]
       summary: Register a new user account
@@ -160,7 +160,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /auth/login:
+  /api/auth/login:
     post:
       tags: [Auth]
       summary: Log in and receive tokens
@@ -187,7 +187,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /auth/logout:
+  /api/auth/logout:
     post:
       tags: [Auth]
       summary: Invalidate refresh token
@@ -205,7 +205,7 @@ paths:
         '204':
           description: Logged out
 
-  /auth/refresh:
+  /api/auth/refresh:
     post:
       tags: [Auth]
       summary: Exchange refresh token for new access token
@@ -233,7 +233,7 @@ paths:
 
   # ─── Settings ──────────────────────────────────────────────────────────────
 
-  /settings:
+  /api/settings:
     get:
       tags: [Settings]
       summary: Get user settings
@@ -244,7 +244,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AppSettings' }
 
-  /settings/income:
+  /api/settings/income:
     put:
       tags: [Settings]
       summary: Update default take-home pay
@@ -264,7 +264,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AppSettings' }
 
-  /settings/currency:
+  /api/settings/currency:
     put:
       tags: [Settings]
       summary: Update currency symbol
@@ -284,7 +284,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AppSettings' }
 
-  /settings/templates:
+  /api/settings/templates:
     get:
       tags: [Settings]
       summary: List all category templates
@@ -345,7 +345,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/CategoryTemplate' }
 
-  /settings/templates/{id}:
+  /api/settings/templates/{id}:
     parameters:
       - name: id
         in: path
@@ -391,7 +391,7 @@ paths:
 
   # ─── Months ────────────────────────────────────────────────────────────────
 
-  /months:
+  /api/months:
     get:
       tags: [Months]
       summary: List all month budgets
@@ -404,7 +404,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/MonthBudget' }
 
-  /months/{monthKey}:
+  /api/months/{monthKey}:
     parameters:
       - name: monthKey
         in: path
@@ -425,7 +425,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /months/{monthKey}/init:
+  /api/months/{monthKey}/init:
     parameters:
       - name: monthKey
         in: path
@@ -446,7 +446,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /months/{monthKey}/income:
+  /api/months/{monthKey}/income:
     parameters:
       - name: monthKey
         in: path
@@ -476,7 +476,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /months/{monthKey}/lock:
+  /api/months/{monthKey}/lock:
     parameters:
       - name: monthKey
         in: path
@@ -499,7 +499,7 @@ paths:
 
   # ─── Categories ────────────────────────────────────────────────────────────
 
-  /months/{monthKey}/categories:
+  /api/months/{monthKey}/categories:
     parameters:
       - name: monthKey
         in: path
@@ -539,7 +539,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Category' }
 
-  /months/{monthKey}/categories/{id}:
+  /api/months/{monthKey}/categories/{id}:
     parameters:
       - name: monthKey
         in: path
@@ -589,7 +589,7 @@ paths:
 
   # ─── Transactions ──────────────────────────────────────────────────────────
 
-  /transactions:
+  /api/transactions:
     get:
       tags: [Transactions]
       summary: List transactions with optional filters
@@ -659,7 +659,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Transaction' }
 
-  /transactions/{id}:
+  /api/transactions/{id}:
     parameters:
       - name: id
         in: path
@@ -711,7 +711,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /transactions/{id}/confirm:
+  /api/transactions/{id}/confirm:
     parameters:
       - name: id
         in: path
@@ -732,7 +732,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /transactions/{id}/dismiss:
+  /api/transactions/{id}/dismiss:
     parameters:
       - name: id
         in: path
@@ -752,7 +752,7 @@ paths:
 
   # ─── Recurring Transactions ────────────────────────────────────────────────
 
-  /recurring:
+  /api/recurring:
     get:
       tags: [Recurring]
       summary: List all recurring transactions
@@ -790,7 +790,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/RecurringTransaction' }
 
-  /recurring/{id}:
+  /api/recurring/{id}:
     parameters:
       - name: id
         in: path
@@ -839,7 +839,7 @@ paths:
 
   # ─── Accounts ──────────────────────────────────────────────────────────────
 
-  /accounts:
+  /api/accounts:
     get:
       tags: [Accounts]
       summary: List all accounts
@@ -875,7 +875,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Account' }
 
-  /accounts/{id}:
+  /api/accounts/{id}:
     parameters:
       - name: id
         in: path

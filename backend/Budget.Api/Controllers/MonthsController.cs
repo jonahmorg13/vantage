@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Budget.Api.Controllers;
 
 [ApiController]
-[Route("months")]
+[Route("api/months")]
 [Authorize]
 public class MonthsController : ControllerBase
 {

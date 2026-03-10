@@ -27,7 +27,7 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.GetAsync("/months");
+        var response = await client.GetAsync("/api/months");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var months = await response.Content.ReadFromJsonAsync<List<MonthBudgetResponse>>();
@@ -39,7 +39,7 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.PostAsync("/months/2026-03/init", null);
+        var response = await client.PostAsync("/api/months/2026-03/init", null);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();
@@ -52,9 +52,9 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PutAsJsonAsync("/settings/income", new UpdateIncomeRequest { DefaultTakeHomePay = 5000 });
+        await client.PutAsJsonAsync("/api/settings/income", new UpdateIncomeRequest { DefaultTakeHomePay = 5000 });
 
-        var response = await client.PostAsync("/months/2026-04/init", null);
+        var response = await client.PostAsync("/api/months/2026-04/init", null);
         var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();
         Assert.Equal(5000, month!.TakeHomePay);
     }
@@ -64,16 +64,16 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, DefaultSpendLimit = 1500, SortOrder = 0
         });
-        await client.PostAsJsonAsync("/settings/templates", new CreateCategoryTemplateRequest
+        await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
             Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, DefaultSpendLimit = 500, SortOrder = 1
         });
 
-        var response = await client.PostAsync("/months/2026-05/init", null);
+        var response = await client.PostAsync("/api/months/2026-05/init", null);
         var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();
         Assert.Equal(2, month!.Categories.Count);
         Assert.Equal("Rent", month.Categories[0].Name);
@@ -85,8 +85,8 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsync("/months/2026-06/init", null);
-        var response = await client.PostAsync("/months/2026-06/init", null);
+        await client.PostAsync("/api/months/2026-06/init", null);
+        var response = await client.PostAsync("/api/months/2026-06/init", null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -96,8 +96,8 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsync("/months/2026-07/init", null);
-        var response = await client.GetAsync("/months/2026-07");
+        await client.PostAsync("/api/months/2026-07/init", null);
+        var response = await client.GetAsync("/api/months/2026-07");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();
@@ -109,7 +109,7 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        var response = await client.GetAsync("/months/2099-01");
+        var response = await client.GetAsync("/api/months/2099-01");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -119,8 +119,8 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsync("/months/2026-08/init", null);
-        var response = await client.PutAsJsonAsync("/months/2026-08/income", new UpdateMonthIncomeRequest
+        await client.PostAsync("/api/months/2026-08/init", null);
+        var response = await client.PutAsJsonAsync("/api/months/2026-08/income", new UpdateMonthIncomeRequest
         {
             TakeHomePay = 6000
         });
@@ -135,8 +135,8 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     {
         var client = await CreateClientAsync();
 
-        await client.PostAsync("/months/2026-09/init", null);
-        var response = await client.PostAsync("/months/2026-09/lock", null);
+        await client.PostAsync("/api/months/2026-09/init", null);
+        var response = await client.PostAsync("/api/months/2026-09/lock", null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();

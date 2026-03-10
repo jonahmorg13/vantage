@@ -14,18 +14,18 @@ export class ApiCategoryRepo implements ICategoryRepository {
   }
 
   async create(monthKey: string, data: Omit<Category, 'id'>): Promise<Category> {
-    const category = await this.client.post<Category>(`/months/${monthKey}/categories`, data)
+    const category = await this.client.post<Category>(`/api/months/${monthKey}/categories`, data)
     this.dispatch({ type: 'ADD_CATEGORY', monthKey, category })
     return category
   }
 
   async update(monthKey: string, id: number, data: Partial<Category>): Promise<void> {
-    const category = await this.client.put<Category>(`/months/${monthKey}/categories/${id}`, data)
+    const category = await this.client.put<Category>(`/api/months/${monthKey}/categories/${id}`, data)
     this.dispatch({ type: 'UPDATE_CATEGORY', monthKey, id, updates: category })
   }
 
   async delete(monthKey: string, id: number): Promise<void> {
-    await this.client.delete(`/months/${monthKey}/categories/${id}`)
+    await this.client.delete(`/api/months/${monthKey}/categories/${id}`)
     this.dispatch({ type: 'DELETE_CATEGORY', monthKey, id })
   }
 }

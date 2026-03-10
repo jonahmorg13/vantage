@@ -23,33 +23,33 @@ export class ApiTransactionRepo implements ITransactionRepository {
     if (filters?.dateFrom) params.set('dateFrom', filters.dateFrom)
     if (filters?.dateTo) params.set('dateTo', filters.dateTo)
     const qs = params.toString()
-    return this.client.get<Transaction[]>(`/transactions${qs ? `?${qs}` : ''}`)
+    return this.client.get<Transaction[]>(`/api/transactions${qs ? `?${qs}` : ''}`)
   }
 
   async create(data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
-    const tx = await this.client.post<Transaction>('/transactions', data)
+    const tx = await this.client.post<Transaction>('/api/transactions', data)
     this.dispatch({ type: 'ADD_TRANSACTION', transaction: tx })
     return tx
   }
 
   async update(id: number, data: Partial<Transaction>): Promise<Transaction> {
-    const tx = await this.client.put<Transaction>(`/transactions/${id}`, data)
+    const tx = await this.client.put<Transaction>(`/api/transactions/${id}`, data)
     this.dispatch({ type: 'UPDATE_TRANSACTION', id, updates: tx })
     return tx
   }
 
   async delete(id: number): Promise<void> {
-    await this.client.delete(`/transactions/${id}`)
+    await this.client.delete(`/api/transactions/${id}`)
     this.dispatch({ type: 'DELETE_TRANSACTION', id })
   }
 
   async confirm(id: number): Promise<void> {
-    await this.client.post(`/transactions/${id}/confirm`)
+    await this.client.post(`/api/transactions/${id}/confirm`)
     this.dispatch({ type: 'CONFIRM_TRANSACTION', id })
   }
 
   async dismiss(id: number): Promise<void> {
-    await this.client.delete(`/transactions/${id}/dismiss`)
+    await this.client.delete(`/api/transactions/${id}/dismiss`)
     this.dispatch({ type: 'DISMISS_TRANSACTION', id })
   }
 }

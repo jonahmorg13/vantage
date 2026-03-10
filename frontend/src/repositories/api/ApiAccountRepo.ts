@@ -14,18 +14,18 @@ export class ApiAccountRepo implements IAccountRepository {
   }
 
   async create(data: Omit<Account, 'id' | 'createdAt' | 'updatedAt'>): Promise<Account> {
-    const account = await this.client.post<Account>('/accounts', data)
+    const account = await this.client.post<Account>('/api/accounts', data)
     this.dispatch({ type: 'ADD_ACCOUNT', account })
     return account
   }
 
   async update(id: number, data: Partial<Account>): Promise<void> {
-    const account = await this.client.put<Account>(`/accounts/${id}`, data)
+    const account = await this.client.put<Account>(`/api/accounts/${id}`, data)
     this.dispatch({ type: 'UPDATE_ACCOUNT', id, updates: account })
   }
 
   async delete(id: number): Promise<void> {
-    await this.client.delete(`/accounts/${id}`)
+    await this.client.delete(`/api/accounts/${id}`)
     this.dispatch({ type: 'DELETE_ACCOUNT', id })
   }
 }
