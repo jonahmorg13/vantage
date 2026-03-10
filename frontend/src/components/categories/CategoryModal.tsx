@@ -33,9 +33,11 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
   const [budgetAmount, setBudgetAmount] = useState('')
   const [spendLimit, setSpendLimit] = useState('')
   const [color, setColor] = useState('#7c6dfa')
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     if (open) {
+      setSubmitted(false)
       if (editCategory) {
         setName(editCategory.name)
         setBudgetAmount(editCategory.budgetAmount.toString())
@@ -50,8 +52,11 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
     }
   }, [open, editCategory])
 
+  const nameError = !name.trim() ? 'Name is required' : ''
+
   function handleSave() {
-    if (!name.trim()) return
+    setSubmitted(true)
+    if (nameError) return
 
     try {
       if (editCategory) {
@@ -80,7 +85,7 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
 
   return (
     <Modal open={open} onClose={onClose} title={editCategory ? 'Edit Budget Item' : 'Add Budget Item'}>
-      <FormGroup label="Name">
+      <FormGroup label="Name" error={submitted ? nameError : ''}>
         <FormInput
           type="text"
           placeholder="e.g. Groceries"

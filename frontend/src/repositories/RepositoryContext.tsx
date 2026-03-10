@@ -1,15 +1,101 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 import { createRepositories } from './index'
 import type { Repositories } from './types'
+import type { AppAction } from '../context/appReducer'
+import type { Account, RecurringTransaction, Transaction, MonthBudget } from '../types'
+
+const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
 
 const RepositoryContext = createContext<Repositories | null>(null)
 
+/**
+ * In API mode, fetches all data from the backend and populates local state.
+ * The frontend never generates data — backend is the sole source of truth.
+ */
+function DataHydrator({ repos, dispatch }: { repos: Repositories; dispatch: React.Dispatch<AppAction> }) {
+  const { state } = useAppContext()
+  const hydratedRef = useRef(false)
+  const initingMonthsRef = useRef<Set<string>>(new Set())
+  const client = repos.apiClient!
+
+  // On mount: fetch settings, accounts, recurring from API
+  useEffect(() => {
+    if (hydratedRef.current) return
+    hydratedRef.current = true
+
+    async function hydrate() {
+      try {
+        const [settings, accounts, recurring] = await Promise.all([
+          client.get<{ defaultTakeHomePay: number; currencySymbol: string; categoryTemplates: [] }>('/settings'),
+          client.get<Account[]>('/accounts'),
+          client.get<RecurringTransaction[]>('/recurring'),
+        ])
+
+        dispatch({
+          type: 'SET_SETTINGS',
+          settings: {
+            defaultTakeHomePay: settings.defaultTakeHomePay,
+            currencySymbol: settings.currencySymbol,
+            categoryTemplates: settings.categoryTemplates,
+          },
+        })
+        dispatch({ type: 'SET_ACCOUNTS', accounts })
+        dispatch({ type: 'SET_RECURRING', recurringTransactions: recurring })
+      } catch {
+        // Auth may have expired — ApiClient handles redirect to login
+      }
+    }
+
+    hydrate()
+  }, [client, dispatch])
+
+  // When current month changes: fetch month + transactions from API
+  useEffect(() => {
+    const monthKey = state.currentMonthKey
+    const monthExists = state.monthBudgets.some((m) => m.monthKey === monthKey)
+    if (monthExists || initingMonthsRef.current.has(monthKey)) return
+
+    initingMonthsRef.current.add(monthKey)
+
+    async function loadMonth() {
+      try {
+        // Try to init the month (creates it + pending transactions on backend)
+        const month = await client.post<MonthBudget>(`/months/${monthKey}/init`)
+        const transactions = await client.get<Transaction[]>(`/transactions?monthKey=${monthKey}`)
+        dispatch({ type: 'SET_MONTH_DATA', month, transactions })
+      } catch {
+        // 409 = month already exists, just fetch it
+        try {
+          const month = await client.get<MonthBudget>(`/months/${monthKey}`)
+          const transactions = await client.get<Transaction[]>(`/transactions?monthKey=${monthKey}`)
+          dispatch({ type: 'SET_MONTH_DATA', month, transactions })
+        } catch {
+          // Month may not exist yet if user has no data
+        }
+      } finally {
+        initingMonthsRef.current.delete(monthKey)
+      }
+    }
+
+    loadMonth()
+  }, [state.currentMonthKey, state.monthBudgets, client, dispatch])
+
+  return null
+}
+
 export function RepositoryProvider({ children }: { children: ReactNode }) {
   const { dispatch } = useAppContext()
+  const { user } = useAuth()
   const repos = useMemo(() => createRepositories(dispatch), [dispatch])
 
-  return <RepositoryContext.Provider value={repos}>{children}</RepositoryContext.Provider>
+  return (
+    <RepositoryContext.Provider value={repos}>
+      {isApiMode && user && <DataHydrator repos={repos} dispatch={dispatch} />}
+      {children}
+    </RepositoryContext.Provider>
+  )
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

@@ -79,8 +79,10 @@ export function AccountsPage() {
     editId: null,
   })
   const [accountForm, setAccountForm] = useState<AccountFormState>(defaultAccountForm())
+  const [submitted, setSubmitted] = useState(false)
 
   function openEditAccount(account: Account) {
+    setSubmitted(false)
     setAccountForm({
       name: account.name,
       accountType: account.accountType,
@@ -94,7 +96,11 @@ export function AccountsPage() {
     setAccountModal({ open: false, editId: null })
   }
 
+  const nameError = !accountForm.name.trim() ? 'Account name is required' : ''
+
   function saveAccount() {
+    setSubmitted(true)
+    if (nameError) return
     const initialBalance = parseFloat(accountForm.initialBalance) || 0
     try {
       if (accountModal.editId !== null) {
@@ -188,6 +194,7 @@ export function AccountsPage() {
         <Button
           variant="primary"
           onClick={() => {
+            setSubmitted(false)
             setAccountForm({ ...defaultAccountForm(), color: DEFAULT_COLORS[colorIndex] })
             setAccountModal({ open: true, editId: null })
           }}
@@ -358,7 +365,7 @@ export function AccountsPage() {
         onClose={closeAccountModal}
         title={accountModal.editId !== null ? 'Edit Account' : 'Add Account'}
       >
-        <FormGroup label="Account Name">
+        <FormGroup label="Account Name" error={submitted ? nameError : ''}>
           <FormInput
             type="text"
             value={accountForm.name}
@@ -411,7 +418,7 @@ export function AccountsPage() {
           <Button variant="secondary" onClick={closeAccountModal}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={saveAccount} disabled={!accountForm.name.trim()}>
+          <Button variant="primary" onClick={saveAccount}>
             {accountModal.editId !== null ? 'Save Changes' : 'Add Account'}
           </Button>
         </div>

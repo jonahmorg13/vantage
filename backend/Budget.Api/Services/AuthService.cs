@@ -48,6 +48,54 @@ public class AuthService : IAuthService
             }, 400);
         }
 
+        // Create a default checking account for the new user
+        _db.Accounts.Add(new Account
+        {
+            Name = "Checking",
+            AccountType = "checking",
+            Color = "#7c6dfa",
+            InitialBalance = 0,
+            IsDefault = true,
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+
+        // Seed default category templates
+        var defaultTemplates = new (string Name, string Color)[]
+        {
+            ("Housing", "#7c6dfa"),
+            ("Utilities", "#6db8fa"),
+            ("Groceries", "#6dfab0"),
+            ("Transportation", "#fa9d6d"),
+            ("Gas", "#fa6d8e"),
+            ("Health & Medical", "#6dfaed"),
+            ("Dining Out", "#fac86d"),
+            ("Entertainment", "#b06dfa"),
+            ("Shopping", "#fa6dc8"),
+            ("Subscriptions", "#9dfa6d"),
+            ("Personal Care", "#faed6d"),
+            ("Savings", "#7c6dfa"),
+            ("Investments", "#6dfab0"),
+            ("Debt", "#fa6d6d"),
+            ("Miscellaneous", "#fa9d6d"),
+        };
+
+        for (var i = 0; i < defaultTemplates.Length; i++)
+        {
+            _db.CategoryTemplates.Add(new CategoryTemplate
+            {
+                Name = defaultTemplates[i].Name,
+                Color = defaultTemplates[i].Color,
+                DefaultBudgetAmount = 0,
+                DefaultSpendLimit = 0,
+                SortOrder = i,
+                UserId = user.Id,
+            });
+        }
+
+        await _db.SaveChangesAsync();
+
         var tokens = await GenerateTokensAsync(user);
         return (tokens, null, 201);
     }

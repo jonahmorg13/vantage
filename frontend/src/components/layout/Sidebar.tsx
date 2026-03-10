@@ -8,11 +8,13 @@ import {
   TrendingUp,
   Settings,
   MoreHorizontal,
+  LogOut,
 } from 'lucide-react'
 import { MonthPicker } from './MonthPicker'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
 import { useSpentByCategory } from '../../hooks/useTransactions'
 import { useCurrency } from '../../hooks/useCurrency'
+import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,6 +35,7 @@ export function Sidebar() {
   const month = useCurrentMonth()
   const spentMap = useSpentByCategory()
   const location = useLocation()
+  const { user, logout } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const moreRef = useRef<HTMLDivElement>(null)
 
@@ -105,7 +108,7 @@ export function Sidebar() {
         </nav>
 
         {/* Quick Stats */}
-        <div className="px-6 py-6 pb-8 border-t border-border">
+        <div className="px-6 py-6 border-t border-border">
           <div className="text-xs text-text3 tracking-[0.12em] uppercase mb-3">This Month</div>
           <div className="flex justify-between text-sm mb-1.5">
             <span className="text-text3">Spent</span>
@@ -118,6 +121,20 @@ export function Sidebar() {
             </span>
           </div>
         </div>
+
+        {/* User / Logout */}
+        {user && (
+          <div className="px-6 py-4 pb-6 border-t border-border">
+            <div className="text-xs text-text3 truncate mb-2 font-mono">{user.email}</div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 text-sm text-text2 hover:text-danger transition-colors font-mono cursor-pointer"
+            >
+              <LogOut size={15} strokeWidth={1.8} />
+              Sign out
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Mobile bottom nav */}
@@ -171,6 +188,15 @@ export function Sidebar() {
                   )}
                 </NavLink>
               ))}
+              {user && (
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm text-text2 hover:text-danger hover:bg-surface2 transition-all duration-150 w-full border-t border-border cursor-pointer"
+                >
+                  <LogOut size={17} strokeWidth={1.8} />
+                  Sign out
+                </button>
+              )}
             </div>
           )}
         </div>

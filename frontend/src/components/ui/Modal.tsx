@@ -25,11 +25,12 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   )
 }
 
-export function FormGroup({ label, children }: { label: string; children: ReactNode }) {
+export function FormGroup({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <div className="mb-5">
       <label className="block text-xs text-text3 tracking-[0.1em] uppercase mb-2">{label}</label>
       {children}
+      {error && <p className="text-danger text-xs mt-1.5">{error}</p>}
     </div>
   )
 }

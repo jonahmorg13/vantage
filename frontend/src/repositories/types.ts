@@ -69,4 +69,5 @@ export interface Repositories {
   accounts: IAccountRepository
   recurring: IRecurringRepository
   settings: ISettingsRepository
+  apiClient?: import('./api/ApiClient').ApiClient
 }

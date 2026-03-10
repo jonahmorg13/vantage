@@ -14,25 +14,32 @@ services:
     ports:
       - "5000:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=BudgetApp;User Id=sa;Password=K5ev6Ce32BHLDymUFzTV;TrustServerCertificate=true
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=BudgetApp_Docker;User Id=sa;Password=K5ev6Ce32BHLDymUFzTV;TrustServerCertificate=true
       - Jwt__SigningKey=DevOnly_SuperSecretKey_ChangeInProduction_AtLeast32Bytes!
       - Jwt__Issuer=BudgetApp
       - Jwt__Audience=BudgetApp
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_healthy
     restart: unless-stopped
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
-      - "1433:1433"
+      - "1444:1433"
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=K5ev6Ce32BHLDymUFzTV
     volumes:
-      - sqlserver-data:/var/opt/mssql
+      - sqlserver-docker-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools*/bin/sqlcmd -S localhost -U sa -P "K5ev6Ce32BHLDymUFzTV" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
 volumes:
-  sqlserver-data:
+  sqlserver-docker-data:

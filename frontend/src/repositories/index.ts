@@ -27,6 +27,7 @@ export function createRepositories(dispatch: React.Dispatch<AppAction>): Reposit
       recurring: new ApiRecurringRepo(client, dispatch),
       settings: new ApiSettingsRepo(client, dispatch),
       months: new ApiMonthRepo(client, dispatch),
+      apiClient: client,
     }
   }
 

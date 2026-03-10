@@ -22,9 +22,7 @@ export class ApiMonthRepo implements IMonthRepository {
   }
 
   async init(monthKey: string): Promise<MonthBudget> {
-    const month = await this.client.post<MonthBudget>(`/months/${monthKey}/init`)
-    this.dispatch({ type: 'INIT_MONTH', monthKey })
-    return month
+    return await this.client.post<MonthBudget>(`/months/${monthKey}/init`)
   }
 
   async updateIncome(monthKey: string, takeHomePay: number): Promise<void> {

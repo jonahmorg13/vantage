@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Budget.Api", "Budget.Api\Bu
 EndProject
 Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "Budget.Database", "Budget.Database\Budget.Database.sqlproj", "{BF1611AA-D57F-4C8D-8F1B-4966ABEBA438}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Budget.IntegrationTests", "Budget.IntegrationTests\Budget.IntegrationTests.csproj", "{389E3230-CA50-4697-AE86-5C6B75154EEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{BF1611AA-D57F-4C8D-8F1B-4966ABEBA438}.Release|x64.Build.0 = Release|Any CPU
 		{BF1611AA-D57F-4C8D-8F1B-4966ABEBA438}.Release|x86.ActiveCfg = Release|Any CPU
 		{BF1611AA-D57F-4C8D-8F1B-4966ABEBA438}.Release|x86.Build.0 = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|x64.Build.0 = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Debug|x86.Build.0 = Debug|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|x64.ActiveCfg = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|x64.Build.0 = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|x86.ActiveCfg = Release|Any CPU
+		{389E3230-CA50-4697-AE86-5C6B75154EEF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

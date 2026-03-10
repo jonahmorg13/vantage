@@ -21,6 +21,7 @@ export function RecurringManager() {
   const [categoryId, setCategoryId] = useState<number>(0)
   const [accountId, setAccountId] = useState<number>(0)
   const [dayOfMonth, setDayOfMonth] = useState('1')
+  const [submitted, setSubmitted] = useState(false)
 
   const templates = state.settings.categoryTemplates
 
@@ -42,11 +43,17 @@ export function RecurringManager() {
       setAccountId(0)
       setDayOfMonth('1')
     }
+    setSubmitted(false)
     setModalOpen(true)
   }
 
+  const nameError = !name.trim() ? 'Name is required' : ''
+  const amountError = !amount ? 'Amount is required' : parseFloat(amount) <= 0 ? 'Amount must be greater than 0' : ''
+  const dayError = !dayOfMonth || parseInt(dayOfMonth) < 1 || parseInt(dayOfMonth) > 31 ? 'Must be 1-31' : ''
+
   function handleSave() {
-    if (!name.trim() || !parseFloat(amount)) return
+    setSubmitted(true)
+    if (nameError || amountError || dayError) return
 
     const resolvedAccountId = accountId !== 0 ? accountId : undefined
     if (editing) {
@@ -195,7 +202,7 @@ export function RecurringManager() {
         onClose={() => setModalOpen(false)}
         title={editing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       >
-        <FormGroup label="Name / Description">
+        <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
           <FormInput
             type="text"
             placeholder="e.g. Roth IRA"
@@ -204,7 +211,7 @@ export function RecurringManager() {
           />
         </FormGroup>
         <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Amount ($)">
+          <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
             <FormInput
               type="number"
               placeholder="0.00"
@@ -213,7 +220,7 @@ export function RecurringManager() {
               onChange={(e) => setAmount(e.target.value)}
             />
           </FormGroup>
-          <FormGroup label="Day of Month">
+          <FormGroup label="Day of Month" error={submitted ? dayError : ''}>
             <FormInput
               type="number"
               min="1"

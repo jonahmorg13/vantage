@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All commands run from the `frontend/` directory:
+### Frontend (run from `frontend/`)
 
 ```bash
 npm run dev       # Start dev server at http://localhost:5173
@@ -13,41 +13,79 @@ npm run lint      # Run ESLint
 npm run preview   # Preview production build
 ```
 
-Docker (from repo root):
+### Backend (run from `backend/`)
+
 ```bash
-docker compose up --build   # Build and serve frontend via Nginx on port 3000
+dotnet build                          # Build entire solution
+dotnet run --project Budget.Api       # Run API at http://localhost:5000
+dotnet test Budget.IntegrationTests   # Run integration tests (xUnit, uses SQLite in-memory)
+dotnet build Budget.Database          # Build database project (produces dacpac)
+```
+
+### Docker (from repo root)
+
+```bash
+docker compose up --build   # Start frontend (port 3000), backend (port 5000), and SQL Server (port 1433)
+docker compose down         # Stop all services
 ```
 
 ## Architecture
 
-This is a **frontend-only SPA** — no backend yet. All data persists in `localStorage`.
+### Frontend
 
 **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4 + React Router v7 + Recharts
 
-### State Management
+Central `AppContext` (`frontend/src/context/`) uses `useReducer` with localStorage persistence. Data source is switchable via `VITE_DATA_SOURCE=local` (default) or `VITE_DATA_SOURCE=api` using the repository layer (`frontend/src/repositories/`).
 
-Central `AppContext` (`frontend/src/context/`) uses `useReducer` with localStorage persistence and migration logic. The state shape:
+Six main pages under `frontend/src/pages/`: Dashboard, Transactions, Categories, Accounts, Future, Settings.
 
+### Backend
+
+**Stack:** .NET 10 + ASP.NET Core + Entity Framework Core + SQL Server + ASP.NET Identity + JWT Auth
+
+**Solution:** `backend/Budget.sln` with three projects:
+
+| Project | Description |
+|---------|-------------|
+| `Budget.Api` | ASP.NET Core Web API — controllers, services, EF Core DbContext |
+| `Budget.Database` | SQL Server Database Project (sqlproj) — schema definitions, produces dacpac |
+| `Budget.IntegrationTests` | xUnit integration tests using `WebApplicationFactory` + SQLite in-memory |
+
+**Project layout:**
 ```
-AppState
-├── settings (defaultTakeHomePay, categoryTemplates)
-├── monthBudgets (per-month category allocations)
-├── transactions (expense/income/transfer records)
-├── recurringTransactions (bill templates)
-├── accounts (checking, savings, brokerage, retirement, etc.)
-└── currentMonthKey (YYYY-MM)
+backend/Budget.Api/
+├── Controllers/       # API endpoints (Auth, Accounts, Categories, Months, Recurring, Settings, Transactions)
+├── Models/            # EF Core entity models
+├── Services/          # Business logic (interface + implementation per domain)
+├── DTOs/              # Request/response objects organized by domain
+├── DataAccess/        # BudgetDbContext + entity configurations
+└── Program.cs         # Service registration, auth, CORS, middleware
 ```
 
-### Routing & Pages
+**Auth:** JWT Bearer tokens with refresh token support. Access tokens expire in 15 min, refresh tokens in 7 days.
 
-Six main pages under `frontend/src/pages/`:
-- `DashboardPage` — overview charts and stats
-- `TransactionsPage` — transaction management
-- `CategoriesPage` — budget category allocation
-- `AccountsPage` — account management
-- `FuturePage` — recurring transactions/future planning
-- `SettingsPage` — app configuration
+**CORS:** Allows `http://localhost:5173` (Vite dev) and `http://localhost:3000` (Docker Nginx).
 
-### Planned Backend
+### Database
 
-A commented-out ASP.NET Core backend exists in `docker-compose.yml`. Planned features include login/auth, Plaid integration, and an admin dashboard (see `.todo.txt`).
+SQL Server Database Project (`backend/Budget.Database/`) using `Microsoft.Build.Sql` SDK v2.1.0. Schema is defined in `.sql` files under `Tables/` and deployed via dacpac.
+
+All data entities include `UserId` foreign key to `AspNetUsers` for per-user data isolation.
+
+### Integration Tests
+
+Tests use `WebApplicationFactory<Program>` with SQLite in-memory replacing SQL Server. Auth helpers generate test JWTs and seed users.
+
+```bash
+# Run all tests
+dotnet test backend/Budget.IntegrationTests
+
+# Run a specific test class
+dotnet test backend/Budget.IntegrationTests --filter "FullyQualifiedName~AccountsCrudTests"
+```
+
+Test categories: Auth (register, login, logout, refresh), Accounts, Categories, Months, Transactions, Recurring, Settings.
+
+### OpenAPI Spec
+
+`/api/openapi.yaml` contains the full API specification.

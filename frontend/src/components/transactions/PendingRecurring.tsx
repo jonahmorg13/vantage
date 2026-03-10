@@ -13,20 +13,20 @@ export function PendingRecurring() {
 
   return (
     <div className="mb-6 bg-surface border border-accent4/30 rounded-xl overflow-hidden">
-      <div className="px-6 py-4 bg-accent4/10 border-b border-accent4/20 flex items-center justify-between">
-        <span className="text-sm text-accent4 font-medium">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 bg-accent4/10 border-b border-accent4/20 flex items-center justify-between gap-2">
+        <span className="text-sm text-accent4 font-medium whitespace-nowrap">
           Pending Recurring ({pending.length})
         </span>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <button
             onClick={() => pending.forEach((tx) => txRepo.confirm(tx.id))}
-            className="text-xs text-accent3 bg-accent3/10 px-3 py-1.5 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
+            className="text-xs text-accent3 bg-accent3/10 px-2 sm:px-3 py-1.5 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
           >
             Confirm All
           </button>
           <button
             onClick={() => pending.forEach((tx) => txRepo.dismiss(tx.id))}
-            className="text-xs text-danger bg-danger/10 px-3 py-1.5 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
+            className="text-xs text-danger bg-danger/10 px-2 sm:px-3 py-1.5 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
           >
             Dismiss All
           </button>
@@ -38,23 +38,23 @@ export function PendingRecurring() {
           return (
             <div
               key={tx.id}
-              className="flex items-center gap-4 px-6 py-3.5 border-b border-white/[0.03] last:border-b-0"
+              className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-3.5 border-b border-white/[0.03] last:border-b-0"
             >
               <span
                 className="inline-block w-2 h-2 rounded-full shrink-0"
                 style={{ background: cat?.color ?? '#555' }}
               />
-              <span className="text-sm text-text flex-1">{tx.name}</span>
-              <span className="text-sm text-accent2 font-medium">{format(tx.amount)}</span>
+              <span className="text-sm text-text flex-1 truncate">{tx.name}</span>
+              <span className="text-sm text-accent2 font-medium whitespace-nowrap">{format(tx.amount)}</span>
               <button
                 onClick={() => txRepo.confirm(tx.id)}
-                className="text-xs text-accent3 bg-accent3/10 px-2.5 py-1 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
+                className="text-xs text-accent3 bg-accent3/10 px-2 sm:px-2.5 py-1 rounded border border-accent3/30 hover:bg-accent3/20 transition-colors cursor-pointer"
               >
                 ✓
               </button>
               <button
                 onClick={() => txRepo.dismiss(tx.id)}
-                className="text-xs text-danger bg-danger/10 px-2.5 py-1 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
+                className="text-xs text-danger bg-danger/10 px-2 sm:px-2.5 py-1 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
               >
                 ×
               </button>

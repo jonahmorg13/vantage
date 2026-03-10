@@ -26,9 +26,11 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
   const [categoryId, setCategoryId] = useState<number>(0)
   const [accountId, setAccountId] = useState<number>(0) // for expense/income: optional linked account
   const [toAccountId, setToAccountId] = useState<number>(0) // for transfer: destination account
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     if (open) {
+      setSubmitted(false)
       if (editTransaction) {
         setName(editTransaction.name)
         setAmount(editTransaction.amount.toString())
@@ -49,9 +51,16 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
     }
   }, [open, editTransaction, month, state.accounts])
 
+  const nameError = !name.trim() ? 'Name is required' : ''
+  const amountError = !amount ? 'Amount is required' : parseFloat(amount) <= 0 ? 'Amount must be greater than 0' : ''
+  const dateError = !date ? 'Date is required' : ''
+  const fromAccountError = type === 'transfer' && accountId === 0 ? 'From account is required' : ''
+  const toAccountError = type === 'transfer' && toAccountId === 0 ? 'To account is required'
+    : type === 'transfer' && toAccountId === accountId ? 'Must be different from source' : ''
+
   function handleSave() {
-    if (!name.trim() || !parseFloat(amount) || !date) return
-    if (type === 'transfer' && (accountId === 0 || toAccountId === 0)) return
+    setSubmitted(true)
+    if (nameError || amountError || dateError || fromAccountError || toAccountError) return
 
     const base = {
       name: name.trim(),
@@ -89,11 +98,6 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
   }
 
   const isTransfer = type === 'transfer'
-  const canSave =
-    name.trim() &&
-    parseFloat(amount) &&
-    date &&
-    (!isTransfer || (accountId !== 0 && toAccountId !== 0 && accountId !== toAccountId))
 
   return (
     <Modal
@@ -101,7 +105,7 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
       onClose={onClose}
       title={editTransaction ? 'Edit Transaction' : 'Add Transaction'}
     >
-      <FormGroup label="Name / Description">
+      <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
         <FormInput
           type="text"
           placeholder="e.g. Whole Foods"
@@ -110,10 +114,10 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
         />
       </FormGroup>
       <div className="grid grid-cols-2 gap-4">
-        <FormGroup label="Amount ($)">
+        <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
           <MoneyInput value={amount} onChange={setAmount} />
         </FormGroup>
-        <FormGroup label="Date">
+        <FormGroup label="Date" error={submitted ? dateError : ''}>
           <FormInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </FormGroup>
       </div>
@@ -129,7 +133,7 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
       {isTransfer ? (
         <>
           <div className="grid grid-cols-2 gap-4">
-            <FormGroup label="From Account">
+            <FormGroup label="From Account" error={submitted ? fromAccountError : ''}>
               <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
                 <option value={0} disabled>
                   Select account
@@ -141,7 +145,7 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
                 ))}
               </FormSelect>
             </FormGroup>
-            <FormGroup label="To Account">
+            <FormGroup label="To Account" error={submitted ? toAccountError : ''}>
               <FormSelect
                 value={toAccountId}
                 onChange={(e) => setToAccountId(Number(e.target.value))}
@@ -199,7 +203,7 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
         <Button variant="secondary" onClick={onClose} className="flex-1 !py-3">
           Cancel
         </Button>
-        <Button onClick={handleSave} className="flex-1 !py-3" disabled={!canSave}>
+        <Button onClick={handleSave} className="flex-1 !py-3">
           {editTransaction ? 'Save Changes' : 'Add Transaction'}
         </Button>
       </div>

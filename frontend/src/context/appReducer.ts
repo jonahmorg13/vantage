@@ -15,11 +15,11 @@ export type AppAction =
   | { type: 'UPDATE_MONTH_INCOME'; monthKey: string; takeHomePay: number }
   | { type: 'LOCK_MONTH'; monthKey: string }
   // Category actions (per-month)
-  | { type: 'ADD_CATEGORY'; monthKey: string; category: Omit<Category, 'id'> }
+  | { type: 'ADD_CATEGORY'; monthKey: string; category: Omit<Category, 'id'> | Category }
   | { type: 'UPDATE_CATEGORY'; monthKey: string; id: number; updates: Partial<Category> }
   | { type: 'DELETE_CATEGORY'; monthKey: string; id: number }
   // Transaction actions
-  | { type: 'ADD_TRANSACTION'; transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'> }
+  | { type: 'ADD_TRANSACTION'; transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'> | Transaction }
   | { type: 'UPDATE_TRANSACTION'; id: number; updates: Partial<Transaction> }
   | { type: 'DELETE_TRANSACTION'; id: number }
   | { type: 'CONFIRM_TRANSACTION'; id: number }
@@ -27,22 +27,30 @@ export type AppAction =
   // Recurring transaction actions
   | {
       type: 'ADD_RECURRING'
-      recurring: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'>
+      recurring: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'> | RecurringTransaction
     }
   | { type: 'UPDATE_RECURRING'; id: number; updates: Partial<RecurringTransaction> }
   | { type: 'DELETE_RECURRING'; id: number }
   // Settings actions
   | { type: 'UPDATE_SETTINGS'; defaultTakeHomePay?: number; currencySymbol?: string }
-  | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> }
+  | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> | CategoryTemplate }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
-  | { type: 'REPLACE_TEMPLATES'; templates: Omit<CategoryTemplate, 'id'>[] }
+  | { type: 'REPLACE_TEMPLATES'; templates: (Omit<CategoryTemplate, 'id'> | CategoryTemplate)[] }
   // Account actions
-  | { type: 'ADD_ACCOUNT'; account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'> }
+  | { type: 'ADD_ACCOUNT'; account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'> | Account }
   | { type: 'UPDATE_ACCOUNT'; id: number; updates: Partial<Account> }
   | { type: 'DELETE_ACCOUNT'; id: number }
   // Bulk
   | { type: 'LOAD_STATE'; state: AppState }
+  | { type: 'SET_MONTH_DATA'; month: MonthBudget; transactions: Transaction[] }
+  | { type: 'SET_ACCOUNTS'; accounts: Account[] }
+  | { type: 'SET_RECURRING'; recurringTransactions: RecurringTransaction[] }
+  | { type: 'SET_SETTINGS'; settings: AppState['settings'] }
+
+function hasId(obj: unknown): obj is { id: number } {
+  return typeof obj === 'object' && obj !== null && 'id' in obj && typeof (obj as Record<string, unknown>).id === 'number'
+}
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -121,6 +129,18 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
     case 'ADD_CATEGORY': {
+      // If the category already has an id (from API), use it directly
+      if (hasId(action.category)) {
+        const cat = action.category as Category
+        return {
+          ...state,
+          monthBudgets: state.monthBudgets.map((m) =>
+            m.monthKey === action.monthKey
+              ? { ...m, categories: [...m.categories, cat], updatedAt: nowISO() }
+              : m
+          ),
+        }
+      }
       const newId = state.nextIds.category
       return {
         ...state,
@@ -171,6 +191,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
     case 'ADD_TRANSACTION': {
+      // If the transaction already has an id (from API), use it directly
+      if (hasId(action.transaction)) {
+        return {
+          ...state,
+          transactions: [...state.transactions, action.transaction as Transaction],
+        }
+      }
       const newId = state.nextIds.transaction
       const now = nowISO()
       return {
@@ -212,6 +239,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
     case 'ADD_RECURRING': {
+      // If the recurring already has an id (from API), just cache it
+      if (hasId(action.recurring)) {
+        return {
+          ...state,
+          recurringTransactions: [...state.recurringTransactions, action.recurring as RecurringTransaction],
+        }
+      }
       const newId = state.nextIds.recurringTransaction
       const now = nowISO()
       const newRecurring: RecurringTransaction = {
@@ -278,6 +312,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
     case 'ADD_TEMPLATE': {
+      // If the template already has an id (from API), use it directly
+      if (hasId(action.template)) {
+        return {
+          ...state,
+          settings: {
+            ...state.settings,
+            categoryTemplates: [...state.settings.categoryTemplates, action.template as CategoryTemplate],
+          },
+        }
+      }
       const newId = state.nextIds.categoryTemplate
       return {
         ...state,
@@ -313,6 +357,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
     case 'REPLACE_TEMPLATES': {
+      // If templates have ids (from API), use them directly
+      if (action.templates.length > 0 && hasId(action.templates[0]!)) {
+        return {
+          ...state,
+          settings: { ...state.settings, categoryTemplates: action.templates as CategoryTemplate[] },
+        }
+      }
       const startId = state.nextIds.categoryTemplate
       const newTemplates = action.templates.map((t, i) => ({ ...t, id: startId + i }))
       return {
@@ -323,6 +374,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'ADD_ACCOUNT': {
+      // If the account already has an id (from API), use it directly
+      if (hasId(action.account)) {
+        return {
+          ...state,
+          accounts: [...state.accounts, action.account as Account],
+        }
+      }
       const newId = state.nextIds.account
       const now = nowISO()
       return {
@@ -360,6 +418,29 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'LOAD_STATE':
       return action.state
+
+    case 'SET_MONTH_DATA': {
+      const existing = state.monthBudgets.find((m) => m.monthKey === action.month.monthKey)
+      return {
+        ...state,
+        monthBudgets: existing
+          ? state.monthBudgets.map((m) => m.monthKey === action.month.monthKey ? action.month : m)
+          : [...state.monthBudgets, action.month],
+        transactions: [
+          ...state.transactions.filter((t) => t.monthKey !== action.month.monthKey),
+          ...action.transactions,
+        ],
+      }
+    }
+
+    case 'SET_ACCOUNTS':
+      return { ...state, accounts: action.accounts }
+
+    case 'SET_RECURRING':
+      return { ...state, recurringTransactions: action.recurringTransactions }
+
+    case 'SET_SETTINGS':
+      return { ...state, settings: action.settings }
 
     default:
       return state

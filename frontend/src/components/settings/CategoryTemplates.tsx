@@ -21,6 +21,7 @@ export function CategoryTemplates() {
   const [budget, setBudget] = useState('')
   const [limit, setLimit] = useState('')
   const [color, setColor] = useState('#7c6dfa')
+  const [submitted, setSubmitted] = useState(false)
 
   function openModal(template?: CategoryTemplate) {
     if (template) {
@@ -41,11 +42,15 @@ export function CategoryTemplates() {
             .padStart(6, '0')
       )
     }
+    setSubmitted(false)
     setModalOpen(true)
   }
 
+  const nameError = !name.trim() ? 'Name is required' : ''
+
   function handleSave() {
-    if (!name.trim()) return
+    setSubmitted(true)
+    if (nameError) return
     if (editing) {
       settingsRepo.updateTemplate(editing.id, {
         name: name.trim(),
@@ -169,7 +174,7 @@ export function CategoryTemplates() {
         onClose={() => setModalOpen(false)}
         title={editing ? 'Edit Budget Template' : 'Add Budget Template'}
       >
-        <FormGroup label="Name">
+        <FormGroup label="Name" error={submitted ? nameError : ''}>
           <FormInput
             type="text"
             placeholder="e.g. Groceries"

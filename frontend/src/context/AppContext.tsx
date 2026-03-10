@@ -1,9 +1,30 @@
-import { createContext, useContext, useReducer, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, useEffect, useState, useCallback, type ReactNode } from 'react'
 import type { AppState } from '../types'
 import { appReducer, type AppAction } from './appReducer'
 import { getCurrentMonthKey } from '../utils/format'
 
 const STORAGE_KEY = 'budget-app-state'
+const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
+
+const emptyState: AppState = {
+  settings: {
+    defaultTakeHomePay: 0,
+    currencySymbol: '$',
+    categoryTemplates: [],
+  },
+  monthBudgets: [],
+  transactions: [],
+  recurringTransactions: [],
+  accounts: [],
+  currentMonthKey: getCurrentMonthKey(),
+  nextIds: {
+    category: 100,
+    categoryTemplate: 16,
+    transaction: 100,
+    recurringTransaction: 1,
+    account: 2,
+  },
+}
 
 const defaultState: AppState = {
   settings: {
@@ -120,6 +141,9 @@ function migrateState(raw: any): AppState {
 }
 
 function loadState(): AppState {
+  // In API mode, start with empty state — data comes from the backend
+  if (isApiMode) return emptyState
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
@@ -132,6 +156,9 @@ function loadState(): AppState {
 }
 
 function saveState(state: AppState) {
+  // In API mode, don't persist to localStorage
+  if (isApiMode) return
+
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   } catch {
@@ -143,6 +170,7 @@ interface AppContextValue {
   state: AppState
   dispatch: React.Dispatch<AppAction>
   isHydrating: boolean
+  resetState: () => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -151,13 +179,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, null, loadState)
   const [isHydrating, setIsHydrating] = useState(true)
 
-  // Persist on every state change
+  const resetState = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY)
+    dispatch({ type: 'LOAD_STATE', state: isApiMode ? emptyState : defaultState })
+  }, [])
+
+  // Persist on every state change (local mode only)
   useEffect(() => {
     saveState(state)
   }, [state])
 
-  // Initialize current month if it doesn't exist
+  // Initialize current month if it doesn't exist (local mode only)
+  // In API mode, DataHydrator in RepositoryContext handles this
   useEffect(() => {
+    if (isApiMode) return
     const monthExists = state.monthBudgets.some((m) => m.monthKey === state.currentMonthKey)
     if (!monthExists) {
       dispatch({ type: 'INIT_MONTH', monthKey: state.currentMonthKey })
@@ -169,7 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsHydrating(false)
   }, [])
 
-  return <AppContext.Provider value={{ state, dispatch, isHydrating }}>{children}</AppContext.Provider>
+  return <AppContext.Provider value={{ state, dispatch, isHydrating, resetState }}>{children}</AppContext.Provider>
 }
 
 export function useAppContext(): AppContextValue {
