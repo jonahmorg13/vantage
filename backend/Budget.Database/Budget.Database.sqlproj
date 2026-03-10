@@ -1,0 +1,13 @@
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.1.0" />
+
+  <PropertyGroup>
+    <Name>Budget.Database</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Build Remove="PostDeployment\SeedData.sql" />
+    <PostDeploy Include="PostDeployment\SeedData.sql" />
+  </ItemGroup>
+</Project>

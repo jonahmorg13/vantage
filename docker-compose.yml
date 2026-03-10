@@ -7,12 +7,32 @@ services:
       - "3000:80"
     restart: unless-stopped
 
-  # backend:                          # Uncomment when you add ASP.NET Core
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #   restart: unless-stopped
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=BudgetApp;User Id=sa;Password=K5ev6Ce32BHLDymUFzTV;TrustServerCertificate=true
+      - Jwt__SigningKey=DevOnly_SuperSecretKey_ChangeInProduction_AtLeast32Bytes!
+      - Jwt__Issuer=BudgetApp
+      - Jwt__Audience=BudgetApp
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=K5ev6Ce32BHLDymUFzTV
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
