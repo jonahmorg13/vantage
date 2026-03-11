@@ -81,14 +81,16 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
     }
 
     [Fact]
-    public async Task Init_DuplicateMonth_Returns409()
+    public async Task Init_DuplicateMonth_ReturnsExisting()
     {
         var client = await CreateClientAsync();
 
         await client.PostAsync("/api/months/2026-06/init", null);
         var response = await client.PostAsync("/api/months/2026-06/init", null);
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var month = await response.Content.ReadFromJsonAsync<MonthBudgetResponse>();
+        Assert.Equal("2026-06", month!.MonthKey);
     }
 
     [Fact]

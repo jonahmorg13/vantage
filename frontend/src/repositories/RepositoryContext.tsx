@@ -28,9 +28,9 @@ function DataHydrator({ repos, dispatch }: { repos: Repositories; dispatch: Reac
     async function hydrate() {
       try {
         const [settings, accounts, recurring] = await Promise.all([
-          client.get<{ defaultTakeHomePay: number; currencySymbol: string; categoryTemplates: [] }>('/settings'),
-          client.get<Account[]>('/accounts'),
-          client.get<RecurringTransaction[]>('/recurring'),
+          client.get<{ defaultTakeHomePay: number; currencySymbol: string; categoryTemplates: [] }>('/api/settings'),
+          client.get<Account[]>('/api/accounts'),
+          client.get<RecurringTransaction[]>('/api/recurring'),
         ])
 
         dispatch({
@@ -61,19 +61,12 @@ function DataHydrator({ repos, dispatch }: { repos: Repositories; dispatch: Reac
 
     async function loadMonth() {
       try {
-        // Try to init the month (creates it + pending transactions on backend)
+        // Init is idempotent — creates the month or returns existing
         const month = await client.post<MonthBudget>(`/api/months/${monthKey}/init`)
         const transactions = await client.get<Transaction[]>(`/api/transactions?monthKey=${monthKey}`)
         dispatch({ type: 'SET_MONTH_DATA', month, transactions })
       } catch {
-        // 409 = month already exists, just fetch it
-        try {
-          const month = await client.get<MonthBudget>(`/api/months/${monthKey}`)
-          const transactions = await client.get<Transaction[]>(`/api/transactions?monthKey=${monthKey}`)
-          dispatch({ type: 'SET_MONTH_DATA', month, transactions })
-        } catch {
-          // Month may not exist yet if user has no data
-        }
+        // Month may not exist yet if user has no data
       } finally {
         initingMonthsRef.current.delete(monthKey)
       }

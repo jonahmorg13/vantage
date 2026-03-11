@@ -42,7 +42,7 @@ public class MonthsController : ControllerBase
         var (month, error, statusCode) = await _monthService.InitAsync(UserId, monthKey);
         if (error is not null)
             return StatusCode(statusCode, new ErrorResponse { Message = error });
-        return StatusCode(201, month);
+        return StatusCode(statusCode, month);
     }
 
     [HttpPut("{monthKey}/income")]

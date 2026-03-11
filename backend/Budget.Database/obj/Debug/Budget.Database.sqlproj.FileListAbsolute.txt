@@ -1,5 +1,0 @@
-/Users/jonah/Source/repos/budget/backend/Budget.Database/bin/Debug/Budget.Database.dacpac
-/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Debug/Model.xml
-/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Debug/refactor.xml
-/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Debug/postdeploy.sql
-/Users/jonah/Source/repos/budget/backend/Budget.Database/obj/Debug/predeploy.sql

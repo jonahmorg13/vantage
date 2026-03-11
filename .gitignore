@@ -61,8 +61,8 @@ frontend/storybook-static/
 # ============================================================
 
 # Build output
-backend/bin/
-backend/obj/
+backend/**/bin/
+backend/**/obj/
 
 # User-specific files
 backend/*.rsuser

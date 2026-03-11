@@ -37,10 +37,11 @@ public class MonthService : IMonthService
     public async Task<(MonthBudgetResponse? Month, string? Error, int StatusCode)> InitAsync(string userId, string monthKey)
     {
         var existing = await _db.MonthBudgets
-            .AnyAsync(m => m.UserId == userId && m.MonthKey == monthKey);
+            .Include(m => m.Categories)
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.MonthKey == monthKey);
 
-        if (existing)
-            return (null, "Month already initialized", 409);
+        if (existing is not null)
+            return (ToResponse(existing), null, 200);
 
         // Get user settings for default income
         var settings = await _db.UserSettings.FirstOrDefaultAsync(s => s.UserId == userId);

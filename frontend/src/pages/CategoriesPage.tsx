@@ -9,6 +9,7 @@ import { useRepositories } from '../repositories/RepositoryContext'
 import { useCurrentMonth } from '../hooks/useMonthBudget'
 import { getCurrentMonthKey } from '../utils/format'
 import { useCurrency } from '../hooks/useCurrency'
+import { useToast } from '../components/ui/Toast'
 import type { Category } from '../types'
 
 export function CategoriesPage() {
@@ -16,6 +17,7 @@ export function CategoriesPage() {
   const { state } = useAppContext()
   const { settings: settingsRepo } = useRepositories()
   const month = useCurrentMonth()
+  const { showToast } = useToast()
   const isPastMonth = state.currentMonthKey < getCurrentMonthKey()
   const [modalOpen, setModalOpen] = useState(false)
   const [editCat, setEditCat] = useState<Category | null>(null)
@@ -36,9 +38,9 @@ export function CategoriesPage() {
     setEditCat(null)
   }
 
-  function handleSaveTemplate() {
+  async function handleSaveTemplate() {
     if (!month) return
-    settingsRepo.replaceTemplates(
+    await settingsRepo.replaceTemplates(
       month.categories.map((c, i) => ({
         name: c.name,
         color: c.color,
@@ -47,6 +49,7 @@ export function CategoriesPage() {
         sortOrder: i,
       }))
     )
+    showToast('Template saved')
     setSaveTemplateOpen(false)
   }
 

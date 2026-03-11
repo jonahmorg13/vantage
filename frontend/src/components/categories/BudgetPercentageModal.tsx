@@ -3,6 +3,7 @@ import { useAppContext } from '../../context/AppContext'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
 import { useRepositories } from '../../repositories/RepositoryContext'
 import { useCurrency } from '../../hooks/useCurrency'
+import { useToast } from '../ui/Toast'
 import { Button } from '../ui/Button'
 
 interface Props {
@@ -15,6 +16,7 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
   const month = useCurrentMonth()
   const { categories: categoriesRepo } = useRepositories()
   const format = useCurrency()
+  const { showToast } = useToast()
   const [percentages, setPercentages] = useState<Record<number, string>>({})
 
   if (!open || !month) return null
@@ -50,6 +52,7 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
         })
       })
     )
+    showToast(`Allocated ${updates.length} ${updates.length === 1 ? 'category' : 'categories'}`)
     onClose()
   }
 
