@@ -24,6 +24,8 @@ services:
 
   dacpac:
     image: ghcr.io/jonahmorg13/budget-dacpac:latest
+    build:
+      context: ./backend/Budget.Database
     command: >
       /TargetConnectionString:"Server=sqlserver,1433;Database=BudgetApp;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true"
     depends_on:
