@@ -25,7 +25,7 @@ dotnet build Budget.Database          # Build database project (produces dacpac)
 ### Docker (from repo root)
 
 ```bash
-docker compose up --build   # Start frontend (port 3000), backend (port 5000), and SQL Server (port 1433)
+docker compose up -d   # Start frontend (port 3000), backend (port 5000), and SQL Server (port 1433)
 docker compose down         # Stop all services
 ```
 
