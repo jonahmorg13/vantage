@@ -19,7 +19,6 @@ export function CategoryTemplates() {
 
   const [name, setName] = useState('')
   const [budget, setBudget] = useState('')
-  const [limit, setLimit] = useState('')
   const [color, setColor] = useState('#7c6dfa')
   const [submitted, setSubmitted] = useState(false)
 
@@ -28,13 +27,11 @@ export function CategoryTemplates() {
       setEditing(template)
       setName(template.name)
       setBudget(template.defaultBudgetAmount.toString())
-      setLimit(template.defaultSpendLimit > 0 ? template.defaultSpendLimit.toString() : '')
       setColor(template.color)
     } else {
       setEditing(null)
       setName('')
       setBudget('')
-      setLimit('')
       setColor(
         '#' +
           Math.floor(Math.random() * 0xffffff)
@@ -55,14 +52,12 @@ export function CategoryTemplates() {
       settingsRepo.updateTemplate(editing.id, {
         name: name.trim(),
         defaultBudgetAmount: parseFloat(budget) || 0,
-        defaultSpendLimit: parseFloat(limit) || 0,
         color,
       })
     } else {
       settingsRepo.createTemplate({
         name: name.trim(),
         defaultBudgetAmount: parseFloat(budget) || 0,
-        defaultSpendLimit: parseFloat(limit) || 0,
         color,
         sortOrder: state.settings.categoryTemplates.length,
       })
@@ -84,7 +79,6 @@ export function CategoryTemplates() {
         name: c.name,
         color: c.color,
         defaultBudgetAmount: c.budgetAmount,
-        defaultSpendLimit: c.spendLimit,
         sortOrder: i,
       }))
     )
@@ -124,9 +118,6 @@ export function CategoryTemplates() {
                 <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
                   Default Budget
                 </th>
-                <th className="px-6 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border">
-                  Default Limit
-                </th>
                 <th className="px-6 py-3 border-b border-border"></th>
               </tr>
             </thead>
@@ -141,9 +132,6 @@ export function CategoryTemplates() {
                   </td>
                   <td className="px-6 py-3 text-sm text-text2 border-b border-white/[0.03]">
                     {format(t.defaultBudgetAmount)}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-text2 border-b border-white/[0.03]">
-                    {t.defaultSpendLimit > 0 ? format(t.defaultSpendLimit) : '—'}
                   </td>
                   <td className="px-6 py-3 border-b border-white/[0.03]">
                     <div className="flex gap-1.5">
@@ -182,26 +170,15 @@ export function CategoryTemplates() {
             onChange={(e) => setName(e.target.value)}
           />
         </FormGroup>
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Default Budget ($)">
-            <FormInput
-              type="number"
-              placeholder="300.00"
-              step="0.01"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-            />
-          </FormGroup>
-          <FormGroup label="Default Spend Limit ($)">
-            <FormInput
-              type="number"
-              placeholder="Same as budget"
-              step="0.01"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-            />
-          </FormGroup>
-        </div>
+        <FormGroup label="Default Budget ($)">
+          <FormInput
+            type="number"
+            placeholder="300.00"
+            step="0.01"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+          />
+        </FormGroup>
         <FormGroup label="Color">
           <FormInput
             type="color"

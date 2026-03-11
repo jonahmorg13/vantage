@@ -38,6 +38,7 @@ interface AccountFormState {
   accountType: Account['accountType']
   color: string
   initialBalance: string
+  currentBalance: string
 }
 
 const defaultAccountForm = (): AccountFormState => ({
@@ -45,6 +46,7 @@ const defaultAccountForm = (): AccountFormState => ({
   accountType: 'checking',
   color: DEFAULT_COLORS[0],
   initialBalance: '0',
+  currentBalance: '',
 })
 
 function getAccountBalance(account: Account, transactions: Transaction[]): number {
@@ -83,11 +85,13 @@ export function AccountsPage() {
 
   function openEditAccount(account: Account) {
     setSubmitted(false)
+    const balance = getAccountBalance(account, transactions)
     setAccountForm({
       name: account.name,
       accountType: account.accountType,
       color: account.color,
       initialBalance: String(account.initialBalance),
+      currentBalance: balance.toFixed(2),
     })
     setAccountModal({ open: true, editId: account.id })
   }
@@ -101,7 +105,18 @@ export function AccountsPage() {
   function saveAccount() {
     setSubmitted(true)
     if (nameError) return
-    const initialBalance = parseFloat(accountForm.initialBalance) || 0
+    let initialBalance = parseFloat(accountForm.initialBalance) || 0
+
+    // If editing and user set a desired current balance, adjust initialBalance
+    if (accountModal.editId !== null && accountForm.currentBalance !== '') {
+      const account = accounts.find((a) => a.id === accountModal.editId)
+      if (account) {
+        const calculatedBalance = getAccountBalance(account, transactions)
+        const desiredBalance = parseFloat(accountForm.currentBalance) || 0
+        initialBalance = account.initialBalance + (desiredBalance - calculatedBalance)
+      }
+    }
+
     try {
       if (accountModal.editId !== null) {
         accountRepo.update(accountModal.editId, {
@@ -414,6 +429,15 @@ export function AccountsPage() {
             placeholder="0.00"
           />
         </FormGroup>
+        {accountModal.editId !== null && (
+          <FormGroup label="Set Current Balance">
+            <MoneyInput
+              value={accountForm.currentBalance}
+              onChange={(v) => setAccountForm((f) => ({ ...f, currentBalance: v }))}
+              placeholder="Leave blank to keep current"
+            />
+          </FormGroup>
+        )}
         <div className="flex gap-3 mt-6 justify-end">
           <Button variant="secondary" onClick={closeAccountModal}>
             Cancel

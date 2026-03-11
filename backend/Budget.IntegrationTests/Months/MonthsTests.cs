@@ -66,11 +66,11 @@ public class MonthsTests : IClassFixture<BudgetApiFactory>
 
         await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, DefaultSpendLimit = 1500, SortOrder = 0
+            Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, SortOrder = 0
         });
         await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, DefaultSpendLimit = 500, SortOrder = 1
+            Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, SortOrder = 1
         });
 
         var response = await client.PostAsync("/api/months/2026-05/init", null);

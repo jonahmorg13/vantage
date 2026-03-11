@@ -12,6 +12,5 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Color).HasMaxLength(50).IsRequired();
         builder.Property(c => c.BudgetAmount).HasColumnType("decimal(18,2)");
-        builder.Property(c => c.SpendLimit).HasColumnType("decimal(18,2)");
     }
 }

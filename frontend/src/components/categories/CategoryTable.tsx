@@ -48,9 +48,6 @@ export function CategoryTable({ onEdit, readOnly }: CategoryTableProps) {
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
               Budget $
             </th>
-            <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap max-[640px]:hidden">
-              Limit
-            </th>
             <th className="px-5 py-3 text-left text-xs text-text3 tracking-[0.12em] uppercase border-b border-border whitespace-nowrap">
               Spent
             </th>

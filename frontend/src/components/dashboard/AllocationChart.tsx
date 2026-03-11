@@ -15,7 +15,7 @@ export function AllocationChart() {
 
   if (isHydrating) {
     return (
-      <Panel title="Allocation Breakdown">
+      <Panel title="Budget Breakdown">
         <div className="grid grid-cols-[240px_1fr] gap-8 items-center p-8 max-[900px]:grid-cols-1">
           <Skeleton width={200} height={200} circle className="max-[900px]:mx-auto" />
           <div className="flex flex-col gap-3 w-full">
@@ -42,7 +42,7 @@ export function AllocationChart() {
   const activeCat = activeIndex !== null ? data[activeIndex] : null
 
   return (
-    <Panel title="Allocation Breakdown">
+    <Panel title="Budget Breakdown">
       <div className="grid grid-cols-[240px_1fr] gap-8 items-center p-8 max-[900px]:grid-cols-1">
         {/* Donut */}
         <div className="relative w-[200px] h-[200px] max-[900px]:mx-auto">

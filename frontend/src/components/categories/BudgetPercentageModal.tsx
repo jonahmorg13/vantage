@@ -48,7 +48,6 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
         const amount = Math.round(calcAmount(pctStr) * 100) / 100
         return categoriesRepo.update(state.currentMonthKey, id, {
           budgetAmount: amount,
-          spendLimit: amount,
         })
       })
     )

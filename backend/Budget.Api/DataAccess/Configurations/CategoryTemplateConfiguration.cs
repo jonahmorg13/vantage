@@ -12,7 +12,6 @@ public class CategoryTemplateConfiguration : IEntityTypeConfiguration<CategoryTe
         builder.Property(t => t.Name).HasMaxLength(200).IsRequired();
         builder.Property(t => t.Color).HasMaxLength(50).IsRequired();
         builder.Property(t => t.DefaultBudgetAmount).HasColumnType("decimal(18,2)");
-        builder.Property(t => t.DefaultSpendLimit).HasColumnType("decimal(18,2)");
         builder.Property(t => t.UserId).IsRequired();
 
         builder.HasOne(t => t.User)

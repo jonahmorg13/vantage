@@ -4,7 +4,6 @@ CREATE TABLE [dbo].[Categories]
     [Name] NVARCHAR(200) NOT NULL,
     [Color] NVARCHAR(50) NOT NULL,
     [BudgetAmount] DECIMAL(18,2) NOT NULL DEFAULT 0,
-    [SpendLimit] DECIMAL(18,2) NOT NULL DEFAULT 0,
     [SortOrder] INT NOT NULL DEFAULT 0,
     [MonthBudgetId] INT NOT NULL,
     CONSTRAINT [PK_Categories] PRIMARY KEY CLUSTERED ([Id]),

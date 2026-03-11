@@ -14,8 +14,5 @@ public class CreateCategoryRequest
     public decimal BudgetAmount { get; set; }
 
     [Required]
-    public decimal SpendLimit { get; set; }
-
-    [Required]
     public int SortOrder { get; set; }
 }

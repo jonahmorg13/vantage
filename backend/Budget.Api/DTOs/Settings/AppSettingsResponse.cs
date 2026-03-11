@@ -13,6 +13,5 @@ public class CategoryTemplateResponse
     public required string Name { get; set; }
     public required string Color { get; set; }
     public decimal DefaultBudgetAmount { get; set; }
-    public decimal DefaultSpendLimit { get; set; }
     public int SortOrder { get; set; }
 }

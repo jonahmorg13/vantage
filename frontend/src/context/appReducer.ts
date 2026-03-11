@@ -67,7 +67,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         name: t.name,
         color: t.color,
         budgetAmount: t.defaultBudgetAmount,
-        spendLimit: t.defaultSpendLimit,
         sortOrder: t.sortOrder,
       }))
 

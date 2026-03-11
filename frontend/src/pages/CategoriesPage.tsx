@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { Button } from '../components/ui/Button'
 import { CategoryTable } from '../components/categories/CategoryTable'
@@ -15,7 +15,7 @@ import type { Category } from '../types'
 export function CategoriesPage() {
   const format = useCurrency()
   const { state } = useAppContext()
-  const { settings: settingsRepo } = useRepositories()
+  const { settings: settingsRepo, months: monthRepo } = useRepositories()
   const month = useCurrentMonth()
   const { showToast } = useToast()
   const isPastMonth = state.currentMonthKey < getCurrentMonthKey()
@@ -23,9 +23,30 @@ export function CategoriesPage() {
   const [editCat, setEditCat] = useState<Category | null>(null)
   const [pctModalOpen, setPctModalOpen] = useState(false)
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
+  const [takeHomePay, setTakeHomePay] = useState('')
+
+  useEffect(() => {
+    if (month) setTakeHomePay(month.takeHomePay.toFixed(2))
+  }, [state.currentMonthKey, month?.takeHomePay])
 
   const totalBudget = month?.categories.reduce((a, c) => a + c.budgetAmount, 0) ?? 0
   const unallocated = (month?.takeHomePay ?? 0) - totalBudget
+  const budgetHasChanged = parseFloat(takeHomePay) !== month?.takeHomePay
+
+  function handleBudgetChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const filtered = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
+    setTakeHomePay(filtered)
+  }
+
+  function handleBudgetBlur() {
+    const num = parseFloat(takeHomePay)
+    if (!isNaN(num)) setTakeHomePay(num.toFixed(2))
+  }
+
+  function saveBudget() {
+    monthRepo.updateIncome(state.currentMonthKey, parseFloat(takeHomePay) || 0)
+    showToast('Monthly budget updated')
+  }
 
   function handleEdit(cat: Category) {
     if (isPastMonth) return
@@ -45,7 +66,6 @@ export function CategoriesPage() {
         name: c.name,
         color: c.color,
         defaultBudgetAmount: c.budgetAmount,
-        defaultSpendLimit: c.spendLimit,
         sortOrder: i,
       }))
     )
@@ -56,7 +76,7 @@ export function CategoriesPage() {
   return (
     <div>
       <div className="mb-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="font-sans text-2xl font-bold tracking-tight text-text">Budget</h1>
           <div className="flex items-center gap-2">
             {isPastMonth ? (
@@ -78,6 +98,38 @@ export function CategoriesPage() {
             )}
           </div>
         </div>
+        {month && (
+          <div className="flex items-center gap-3 mt-3">
+            <span className="text-xs text-text3 tracking-[0.12em] uppercase">Monthly Budget</span>
+            {isPastMonth ? (
+              <span className="font-mono text-lg font-medium text-text3">
+                {format(month.takeHomePay)}
+              </span>
+            ) : (
+              <>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 font-mono text-sm pointer-events-none">
+                    {state.settings.currencySymbol ?? '$'}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="bg-surface2 border border-border text-text font-mono text-sm pl-7 pr-3 py-1.5 rounded-lg w-36 text-right transition-colors focus:outline-none focus:border-accent"
+                    value={takeHomePay}
+                    onChange={handleBudgetChange}
+                    onBlur={handleBudgetBlur}
+                    onFocus={(e) => e.target.select()}
+                  />
+                </div>
+                {budgetHasChanged && (
+                  <Button onClick={saveBudget} className="!py-1.5 text-sm">
+                    Save
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <Panel

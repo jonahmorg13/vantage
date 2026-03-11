@@ -14,11 +14,11 @@ export function AlertsBanner() {
   const alerts = month.categories
     .filter((cat) => {
       const spent = spentMap.get(cat.id) ?? 0
-      return cat.spendLimit > 0 && spent > cat.spendLimit
+      return cat.budgetAmount > 0 && spent > cat.budgetAmount
     })
     .map((cat) => {
       const spent = spentMap.get(cat.id) ?? 0
-      return { cat, spent, over: spent - cat.spendLimit }
+      return { cat, spent, over: spent - cat.budgetAmount }
     })
 
   if (alerts.length === 0) return null
@@ -53,7 +53,7 @@ export function AlertsBanner() {
             </div>
             {isOpen && (
               <div className="mt-2 pt-2 border-t border-danger/20 text-xs text-danger/80 font-mono">
-                Spent {format(spent)} vs limit {format(cat.spendLimit)} — over by {format(over)}
+                Spent {format(spent)} vs budget {format(cat.budgetAmount)} — over by {format(over)}
               </div>
             )}
           </button>

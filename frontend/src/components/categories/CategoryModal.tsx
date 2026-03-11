@@ -31,7 +31,6 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
   const { showToast } = useToast()
   const [name, setName] = useState('')
   const [budgetAmount, setBudgetAmount] = useState('')
-  const [spendLimit, setSpendLimit] = useState('')
   const [color, setColor] = useState('#7c6dfa')
   const [submitted, setSubmitted] = useState(false)
 
@@ -41,12 +40,10 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
       if (editCategory) {
         setName(editCategory.name)
         setBudgetAmount(editCategory.budgetAmount.toString())
-        setSpendLimit(editCategory.spendLimit > 0 ? editCategory.spendLimit.toString() : '')
         setColor(editCategory.color)
       } else {
         setName('')
         setBudgetAmount('')
-        setSpendLimit('')
         setColor(CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)])
       }
     }
@@ -63,7 +60,6 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
         categoryRepo.update(state.currentMonthKey, editCategory.id, {
           name: name.trim(),
           budgetAmount: parseFloat(budgetAmount) || 0,
-          spendLimit: parseFloat(spendLimit) || 0,
           color,
         })
         showToast('Budget item updated')
@@ -71,7 +67,6 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
         categoryRepo.create(state.currentMonthKey, {
           name: name.trim(),
           budgetAmount: parseFloat(budgetAmount) || 0,
-          spendLimit: parseFloat(spendLimit) || 0,
           color,
           sortOrder: 999,
         })
@@ -93,14 +88,9 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
           onChange={(e) => setName(e.target.value)}
         />
       </FormGroup>
-      <div className="grid grid-cols-2 gap-4">
-        <FormGroup label="Budget Amount ($)">
-          <MoneyInput value={budgetAmount} onChange={setBudgetAmount} placeholder="300.00" />
-        </FormGroup>
-        <FormGroup label="Spend Limit ($)">
-          <MoneyInput value={spendLimit} onChange={setSpendLimit} placeholder="Same as budget" />
-        </FormGroup>
-      </div>
+      <FormGroup label="Budget Amount ($)">
+        <MoneyInput value={budgetAmount} onChange={setBudgetAmount} placeholder="300.00" />
+      </FormGroup>
       <FormGroup label="Color">
         <div className="flex gap-2 flex-wrap">
           {CATEGORY_COLORS.map((c) => (

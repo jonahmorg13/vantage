@@ -74,6 +74,13 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
     let payload: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>
     if (type === 'transfer') {
       payload = { ...base, accountId, toAccountId, categoryId: categoryId !== 0 ? categoryId : undefined }
+    } else if (type === 'income') {
+      payload = {
+        ...base,
+        categoryId: undefined,
+        accountId: accountId !== 0 ? accountId : undefined,
+        toAccountId: undefined,
+      }
     } else {
       payload = {
         ...base,
@@ -174,6 +181,17 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
             </FormSelect>
           </FormGroup>
         </>
+      ) : type === 'income' ? (
+        <FormGroup label="Account (optional)">
+          <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+            <option value={0}>None</option>
+            {state.accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </FormSelect>
+        </FormGroup>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           <FormGroup label="Budget Item (optional)">

@@ -4,7 +4,6 @@ CREATE TABLE [dbo].[CategoryTemplates]
     [Name] NVARCHAR(200) NOT NULL,
     [Color] NVARCHAR(50) NOT NULL,
     [DefaultBudgetAmount] DECIMAL(18,2) NOT NULL DEFAULT 0,
-    [DefaultSpendLimit] DECIMAL(18,2) NOT NULL DEFAULT 0,
     [SortOrder] INT NOT NULL DEFAULT 0,
     [UserId] NVARCHAR(450) NOT NULL,
     CONSTRAINT [PK_CategoryTemplates] PRIMARY KEY CLUSTERED ([Id]),

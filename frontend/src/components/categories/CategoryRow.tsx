@@ -16,8 +16,8 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
   const { state, dispatch } = useAppContext()
   const left = cat.budgetAmount - spent
   const pct = cat.budgetAmount > 0 ? Math.min((spent / cat.budgetAmount) * 100, 100) : 0
-  const overLimit = cat.spendLimit > 0 && spent > cat.spendLimit
-  const nearLimit = cat.spendLimit > 0 && spent > cat.spendLimit * 0.85 && spent <= cat.spendLimit
+  const overLimit = cat.budgetAmount > 0 && spent > cat.budgetAmount
+  const nearLimit = cat.budgetAmount > 0 && spent > cat.budgetAmount * 0.85 && spent <= cat.budgetAmount
 
   const isFull = !overLimit && pct >= 100
   const barColor = overLimit
@@ -31,18 +31,9 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
       ? 'full'
       : nearLimit
         ? 'warn'
-        : cat.spendLimit === 0 && cat.budgetAmount === 0
+        : cat.budgetAmount === 0
           ? 'none'
           : 'ok'
-
-  function updateField(field: 'budgetAmount' | 'spendLimit', value: string) {
-    dispatch({
-      type: 'UPDATE_CATEGORY',
-      monthKey: state.currentMonthKey,
-      id: cat.id,
-      updates: { [field]: parseFloat(value) || 0 },
-    })
-  }
 
   return (
     <>
@@ -56,34 +47,8 @@ export function CategoryRow({ category: cat, spent, onEdit, readOnly }: Category
             <span>{cat.name}</span>
           </div>
         </td>
-        <td className="px-5 py-3 border-b-0" onClick={(e) => e.stopPropagation()}>
-          {readOnly ? (
-            <span className="text-text font-mono text-sm">{format(cat.budgetAmount)}</span>
-          ) : (
-            <input
-              type="number"
-              className="bg-transparent border border-transparent text-text font-mono text-sm px-2 py-1 rounded w-[100px] text-right transition-all focus:outline-none focus:border-accent focus:bg-surface2"
-              value={cat.budgetAmount.toFixed(2)}
-              onChange={(e) => updateField('budgetAmount', e.target.value)}
-              step="0.01"
-            />
-          )}
-        </td>
-        <td className="px-5 py-3 border-b-0 max-[640px]:hidden" onClick={(e) => e.stopPropagation()}>
-          {readOnly ? (
-            <span className="text-text font-mono text-sm">
-              {cat.spendLimit > 0 ? format(cat.spendLimit) : '—'}
-            </span>
-          ) : (
-            <input
-              type="number"
-              className="bg-transparent border border-transparent text-text font-mono text-sm px-2 py-1 rounded w-[100px] text-right transition-all focus:outline-none focus:border-accent focus:bg-surface2"
-              value={cat.spendLimit > 0 ? cat.spendLimit.toFixed(2) : ''}
-              placeholder="—"
-              onChange={(e) => updateField('spendLimit', e.target.value)}
-              step="0.01"
-            />
-          )}
+        <td className="px-5 py-3 border-b-0">
+          <span className="text-text font-mono text-sm">{format(cat.budgetAmount)}</span>
         </td>
         <td className="px-5 py-3 text-sm text-accent2 border-b-0">{format(spent)}</td>
         <td className={`px-5 py-3 text-sm border-b-0 ${left < 0 ? 'text-danger' : 'text-accent3'}`}>

@@ -57,7 +57,6 @@ public class SettingsService : ISettingsService
             Name = request.Name,
             Color = request.Color,
             DefaultBudgetAmount = request.DefaultBudgetAmount,
-            DefaultSpendLimit = request.DefaultSpendLimit,
             SortOrder = request.SortOrder,
             UserId = userId
         };
@@ -77,7 +76,6 @@ public class SettingsService : ISettingsService
             Name = r.Name,
             Color = r.Color,
             DefaultBudgetAmount = r.DefaultBudgetAmount,
-            DefaultSpendLimit = r.DefaultSpendLimit,
             SortOrder = r.SortOrder,
             UserId = userId
         }).ToList();
@@ -96,7 +94,6 @@ public class SettingsService : ISettingsService
         if (request.Name is not null) template.Name = request.Name;
         if (request.Color is not null) template.Color = request.Color;
         if (request.DefaultBudgetAmount.HasValue) template.DefaultBudgetAmount = request.DefaultBudgetAmount.Value;
-        if (request.DefaultSpendLimit.HasValue) template.DefaultSpendLimit = request.DefaultSpendLimit.Value;
         if (request.SortOrder.HasValue) template.SortOrder = request.SortOrder.Value;
 
         await _db.SaveChangesAsync();
@@ -142,7 +139,6 @@ public class SettingsService : ISettingsService
         Name = t.Name,
         Color = t.Color,
         DefaultBudgetAmount = t.DefaultBudgetAmount,
-        DefaultSpendLimit = t.DefaultSpendLimit,
         SortOrder = t.SortOrder
     };
 }

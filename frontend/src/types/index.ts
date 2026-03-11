@@ -3,7 +3,6 @@ export interface Category {
   name: string
   color: string
   budgetAmount: number
-  spendLimit: number
   sortOrder: number
 }
 
@@ -12,7 +11,6 @@ export interface CategoryTemplate {
   name: string
   color: string
   defaultBudgetAmount: number
-  defaultSpendLimit: number
   sortOrder: number
 }
 

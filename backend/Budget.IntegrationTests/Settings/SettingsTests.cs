@@ -76,7 +76,6 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
             Name = "Groceries",
             Color = "#00AA00",
             DefaultBudgetAmount = 500,
-            DefaultSpendLimit = 600,
             SortOrder = 1
         });
 
@@ -93,11 +92,11 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
 
         await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, DefaultSpendLimit = 1500, SortOrder = 0
+            Name = "Rent", Color = "#FF0000", DefaultBudgetAmount = 1500, SortOrder = 0
         });
         await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, DefaultSpendLimit = 500, SortOrder = 1
+            Name = "Food", Color = "#00FF00", DefaultBudgetAmount = 400, SortOrder = 1
         });
 
         var response = await client.GetAsync("/api/settings/templates");
@@ -113,14 +112,14 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
         // Create initial
         await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Old", Color = "#000", DefaultBudgetAmount = 100, DefaultSpendLimit = 100, SortOrder = 0
+            Name = "Old", Color = "#000", DefaultBudgetAmount = 100, SortOrder = 0
         });
 
         // Bulk replace
         var response = await client.PutAsJsonAsync("/api/settings/templates", new List<CreateCategoryTemplateRequest>
         {
-            new() { Name = "New1", Color = "#111", DefaultBudgetAmount = 200, DefaultSpendLimit = 200, SortOrder = 0 },
-            new() { Name = "New2", Color = "#222", DefaultBudgetAmount = 300, DefaultSpendLimit = 300, SortOrder = 1 }
+            new() { Name = "New1", Color = "#111", DefaultBudgetAmount = 200, SortOrder = 0 },
+            new() { Name = "New2", Color = "#222", DefaultBudgetAmount = 300, SortOrder = 1 }
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -136,7 +135,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
 
         var createResponse = await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "Utilities", Color = "#0000FF", DefaultBudgetAmount = 200, DefaultSpendLimit = 250, SortOrder = 0
+            Name = "Utilities", Color = "#0000FF", DefaultBudgetAmount = 200, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryTemplateResponse>();
 
@@ -168,7 +167,7 @@ public class SettingsTests : IClassFixture<BudgetApiFactory>
 
         var createResponse = await client.PostAsJsonAsync("/api/settings/templates", new CreateCategoryTemplateRequest
         {
-            Name = "ToDelete", Color = "#000", DefaultBudgetAmount = 0, DefaultSpendLimit = 0, SortOrder = 0
+            Name = "ToDelete", Color = "#000", DefaultBudgetAmount = 0, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryTemplateResponse>();
 

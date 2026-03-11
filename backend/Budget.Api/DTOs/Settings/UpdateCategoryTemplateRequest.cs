@@ -11,6 +11,5 @@ public class UpdateCategoryTemplateRequest
     public string? Color { get; set; }
 
     public decimal? DefaultBudgetAmount { get; set; }
-    public decimal? DefaultSpendLimit { get; set; }
     public int? SortOrder { get; set; }
 }

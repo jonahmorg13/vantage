@@ -37,7 +37,6 @@ public class CategoryService : ICategoryService
             Name = request.Name,
             Color = request.Color,
             BudgetAmount = request.BudgetAmount,
-            SpendLimit = request.SpendLimit,
             SortOrder = request.SortOrder,
             MonthBudgetId = month.Id
         };
@@ -61,7 +60,6 @@ public class CategoryService : ICategoryService
         if (request.Name is not null) category.Name = request.Name;
         if (request.Color is not null) category.Color = request.Color;
         if (request.BudgetAmount.HasValue) category.BudgetAmount = request.BudgetAmount.Value;
-        if (request.SpendLimit.HasValue) category.SpendLimit = request.SpendLimit.Value;
         if (request.SortOrder.HasValue) category.SortOrder = request.SortOrder.Value;
 
         await _db.SaveChangesAsync();
@@ -89,7 +87,6 @@ public class CategoryService : ICategoryService
         Name = c.Name,
         Color = c.Color,
         BudgetAmount = c.BudgetAmount,
-        SpendLimit = c.SpendLimit,
         SortOrder = c.SortOrder
     };
 }

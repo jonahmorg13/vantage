@@ -11,6 +11,5 @@ public class UpdateCategoryRequest
     public string? Color { get; set; }
 
     public decimal? BudgetAmount { get; set; }
-    public decimal? SpendLimit { get; set; }
     public int? SortOrder { get; set; }
 }

@@ -88,7 +88,6 @@ public class AuthService : IAuthService
                 Name = defaultTemplates[i].Name,
                 Color = defaultTemplates[i].Color,
                 DefaultBudgetAmount = 0,
-                DefaultSpendLimit = 0,
                 SortOrder = i,
                 UserId = user.Id,
             });

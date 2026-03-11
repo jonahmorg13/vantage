@@ -47,7 +47,6 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
             Name = "Groceries",
             Color = "#00AA00",
             BudgetAmount = 500,
-            SpendLimit = 600,
             SortOrder = 1
         });
 
@@ -66,7 +65,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
 
         var response = await client.PostAsJsonAsync("/api/months/2099-01/categories", new CreateCategoryRequest
         {
-            Name = "X", Color = "#000", BudgetAmount = 0, SpendLimit = 0, SortOrder = 0
+            Name = "X", Color = "#000", BudgetAmount = 0, SortOrder = 0
         });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -79,7 +78,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
 
         var createResponse = await client.PostAsJsonAsync($"/api/months/{monthKey}/categories", new CreateCategoryRequest
         {
-            Name = "Old", Color = "#FF0000", BudgetAmount = 100, SpendLimit = 100, SortOrder = 0
+            Name = "Old", Color = "#FF0000", BudgetAmount = 100, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
@@ -113,7 +112,7 @@ public class CategoriesTests : IClassFixture<BudgetApiFactory>
 
         var createResponse = await client.PostAsJsonAsync($"/api/months/{monthKey}/categories", new CreateCategoryRequest
         {
-            Name = "ToDelete", Color = "#000", BudgetAmount = 0, SpendLimit = 0, SortOrder = 0
+            Name = "ToDelete", Color = "#000", BudgetAmount = 0, SortOrder = 0
         });
         var created = await createResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 

@@ -66,7 +66,6 @@ public class MonthService : IMonthService
                 Name = t.Name,
                 Color = t.Color,
                 BudgetAmount = t.DefaultBudgetAmount,
-                SpendLimit = t.DefaultSpendLimit,
                 SortOrder = t.SortOrder
             }).ToList()
         };
@@ -145,7 +144,6 @@ public class MonthService : IMonthService
             Name = c.Name,
             Color = c.Color,
             BudgetAmount = c.BudgetAmount,
-            SpendLimit = c.SpendLimit,
             SortOrder = c.SortOrder
         }).ToList(),
         IsLocked = m.IsLocked,

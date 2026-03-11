@@ -230,18 +230,19 @@ export function RecurringManager() {
             />
           </FormGroup>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Type">
-            <FormSelect
-              value={type}
-              onChange={(e) => setType(e.target.value as 'expense' | 'income')}
-            >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
-            </FormSelect>
-          </FormGroup>
+        <FormGroup label="Type">
+          <FormSelect
+            value={type}
+            onChange={(e) => setType(e.target.value as 'expense' | 'income')}
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </FormSelect>
+        </FormGroup>
+        {type !== 'income' && (
           <FormGroup label="Budget Item">
             <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+              <option value={0}>None</option>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -249,7 +250,7 @@ export function RecurringManager() {
               ))}
             </FormSelect>
           </FormGroup>
-        </div>
+        )}
         {state.accounts.length > 0 && (
           <FormGroup label="Account (optional)">
             <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
