@@ -20,6 +20,7 @@ dotnet build                          # Build entire solution
 dotnet run --project Budget.Api       # Run API at http://localhost:5000
 dotnet test Budget.IntegrationTests   # Run integration tests (xUnit, uses SQLite in-memory)
 dotnet build Budget.Database          # Build database project (produces dacpac)
+./scripts/deploy-db.sh               # Build dacpac + publish schema to SQL Server (reads appsettings.Development.json)
 ```
 
 ### Docker (from repo root)

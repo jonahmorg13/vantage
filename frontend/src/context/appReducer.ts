@@ -68,6 +68,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         color: t.color,
         budgetAmount: t.defaultBudgetAmount,
         sortOrder: t.sortOrder,
+        templateId: t.id,
       }))
 
       const newMonth: MonthBudget = {
@@ -87,8 +88,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           name: r.name,
           amount: r.amount,
           type: r.type,
-          categoryId: r.categoryId,
+          categoryId: r.categoryId != null
+            ? categories.find((c) => c.templateId === r.categoryId)?.id
+            : undefined,
           accountId: r.accountId,
+          toAccountId: r.toAccountId,
           date: `${action.monthKey}-${String(r.dayOfMonth).padStart(2, '0')}`,
           monthKey: action.monthKey,
           recurringId: r.id,
@@ -255,14 +259,20 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
 
       // If active, generate a pending transaction for the current month immediately
+      const currentMonth = state.monthBudgets.find((m) => m.monthKey === state.currentMonthKey)
+      const resolvedCategoryId = newRecurring.categoryId != null
+        ? currentMonth?.categories.find((c) => c.templateId === newRecurring.categoryId)?.id
+        : undefined
+
       const pendingTx: Transaction | null = newRecurring.isActive
         ? {
             id: state.nextIds.transaction,
             name: newRecurring.name,
             amount: newRecurring.amount,
             type: newRecurring.type,
-            categoryId: newRecurring.categoryId,
+            categoryId: resolvedCategoryId,
             accountId: newRecurring.accountId,
+            toAccountId: newRecurring.toAccountId,
             date: `${state.currentMonthKey}-${String(newRecurring.dayOfMonth).padStart(2, '0')}`,
             monthKey: state.currentMonthKey,
             recurringId: newId,

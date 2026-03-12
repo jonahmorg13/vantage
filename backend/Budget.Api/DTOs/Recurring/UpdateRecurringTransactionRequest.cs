@@ -14,6 +14,7 @@ public class UpdateRecurringTransactionRequest
 
     public int? CategoryId { get; set; }
     public int? AccountId { get; set; }
+    public int? ToAccountId { get; set; }
 
     [Range(1, 31)]
     public int? DayOfMonth { get; set; }

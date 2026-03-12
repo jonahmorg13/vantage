@@ -5,6 +5,7 @@ CREATE TABLE [dbo].[Categories]
     [Color] NVARCHAR(50) NOT NULL,
     [BudgetAmount] DECIMAL(18,2) NOT NULL DEFAULT 0,
     [SortOrder] INT NOT NULL DEFAULT 0,
+    [TemplateId] INT NULL,
     [MonthBudgetId] INT NOT NULL,
     CONSTRAINT [PK_Categories] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [FK_Categories_MonthBudgets] FOREIGN KEY ([MonthBudgetId]) REFERENCES [dbo].[MonthBudgets]([Id]) ON DELETE CASCADE

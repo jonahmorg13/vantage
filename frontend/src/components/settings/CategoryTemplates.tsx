@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAppContext } from '../../context/AppContext'
 import { useRepositories } from '../../repositories/RepositoryContext'
+import { useToast } from '../ui/Toast'
 import { Panel } from '../ui/Panel'
 import { Button } from '../ui/Button'
 import { Modal, FormGroup, FormInput } from '../ui/Modal'
@@ -12,6 +13,7 @@ export function CategoryTemplates() {
   const format = useCurrency()
   const { state } = useAppContext()
   const { settings: settingsRepo } = useRepositories()
+  const { showToast } = useToast()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<CategoryTemplate | null>(null)
   const [copyModalOpen, setCopyModalOpen] = useState(false)
@@ -54,6 +56,7 @@ export function CategoryTemplates() {
         defaultBudgetAmount: parseFloat(budget) || 0,
         color,
       })
+      showToast('Template updated')
     } else {
       settingsRepo.createTemplate({
         name: name.trim(),
@@ -61,6 +64,7 @@ export function CategoryTemplates() {
         color,
         sortOrder: state.settings.categoryTemplates.length,
       })
+      showToast('Template added')
     }
     setModalOpen(false)
   }
@@ -83,6 +87,7 @@ export function CategoryTemplates() {
       }))
     )
     setCopyModalOpen(false)
+    showToast('Templates replaced')
   }
 
   const sortedMonths = [...state.monthBudgets].sort((a, b) => b.monthKey.localeCompare(a.monthKey))
@@ -142,7 +147,7 @@ export function CategoryTemplates() {
                         ✎
                       </button>
                       <button
-                        onClick={() => settingsRepo.deleteTemplate(t.id)}
+                        onClick={() => { settingsRepo.deleteTemplate(t.id); showToast('Template deleted') }}
                         className="bg-transparent border-none text-text3 cursor-pointer text-lg p-1 px-2 rounded transition-all hover:bg-danger/15 hover:text-danger leading-none"
                       >
                         ×

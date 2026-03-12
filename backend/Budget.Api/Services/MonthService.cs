@@ -66,11 +66,18 @@ public class MonthService : IMonthService
                 Name = t.Name,
                 Color = t.Color,
                 BudgetAmount = t.DefaultBudgetAmount,
-                SortOrder = t.SortOrder
+                SortOrder = t.SortOrder,
+                TemplateId = t.Id
             }).ToList()
         };
 
         _db.MonthBudgets.Add(month);
+        await _db.SaveChangesAsync();
+
+        // Build template ID → category ID map for resolving recurring categoryIds
+        var templateToCategoryId = month.Categories
+            .Where(c => c.TemplateId.HasValue)
+            .ToDictionary(c => c.TemplateId!.Value, c => c.Id);
 
         // Create pending transactions from active recurring transactions
         var recurring = await _db.RecurringTransactions
@@ -83,13 +90,18 @@ public class MonthService : IMonthService
                 int.Parse(monthKey[..4]), int.Parse(monthKey[5..])));
             var date = $"{monthKey}-{day:D2}";
 
+            int? resolvedCategoryId = r.CategoryId.HasValue &&
+                templateToCategoryId.TryGetValue(r.CategoryId.Value, out var catId)
+                    ? catId : null;
+
             _db.Transactions.Add(new Transaction
             {
                 Name = r.Name,
                 Amount = r.Amount,
                 Type = r.Type,
-                CategoryId = r.CategoryId,
+                CategoryId = resolvedCategoryId,
                 AccountId = r.AccountId,
+                ToAccountId = r.ToAccountId,
                 Date = date,
                 MonthKey = monthKey,
                 RecurringId = r.Id,
@@ -144,7 +156,8 @@ public class MonthService : IMonthService
             Name = c.Name,
             Color = c.Color,
             BudgetAmount = c.BudgetAmount,
-            SortOrder = c.SortOrder
+            SortOrder = c.SortOrder,
+            TemplateId = c.TemplateId
         }).ToList(),
         IsLocked = m.IsLocked,
         CreatedAt = m.CreatedAt.ToString("o"),

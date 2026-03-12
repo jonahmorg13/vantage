@@ -6,8 +6,9 @@ public class RecurringTransaction
     public required string Name { get; set; }
     public decimal Amount { get; set; }
     public required string Type { get; set; }
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     public int? AccountId { get; set; }
+    public int? ToAccountId { get; set; }
     public int DayOfMonth { get; set; }
     public bool IsActive { get; set; }
     public required string UserId { get; set; }

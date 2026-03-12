@@ -37,6 +37,11 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request)
     {
+        if (request.Type == "transfer" && (request.AccountId is null || request.ToAccountId is null))
+            return BadRequest("Transfers require both AccountId and ToAccountId.");
+        if (request.Type == "transfer" && request.AccountId == request.ToAccountId)
+            return BadRequest("Transfer accounts must be different.");
+
         var transaction = await _transactionService.CreateAsync(UserId, request);
         return StatusCode(201, transaction);
     }
@@ -44,6 +49,11 @@ public class TransactionsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTransactionRequest request)
     {
+        if (request.Type == "transfer" && (request.AccountId is null || request.ToAccountId is null))
+            return BadRequest("Transfers require both AccountId and ToAccountId.");
+        if (request.Type == "transfer" && request.AccountId == request.ToAccountId)
+            return BadRequest("Transfer accounts must be different.");
+
         var transaction = await _transactionService.UpdateAsync(UserId, id, request);
         if (transaction is null) return NotFound();
         return Ok(transaction);

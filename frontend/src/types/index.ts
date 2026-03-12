@@ -4,6 +4,7 @@ export interface Category {
   color: string
   budgetAmount: number
   sortOrder: number
+  templateId?: number
 }
 
 export interface CategoryTemplate {
@@ -34,9 +35,10 @@ export interface RecurringTransaction {
   id: number
   name: string
   amount: number
-  type: 'expense' | 'income'
-  categoryId: number
+  type: 'expense' | 'income' | 'transfer'
+  categoryId?: number
   accountId?: number
+  toAccountId?: number
   dayOfMonth: number
   isActive: boolean
   createdAt: string

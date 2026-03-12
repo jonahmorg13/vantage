@@ -30,6 +30,11 @@ public class RecurringController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateRecurringTransactionRequest request)
     {
+        if (request.Type == "transfer" && (request.AccountId is null || request.ToAccountId is null))
+            return BadRequest("Transfers require both AccountId and ToAccountId.");
+        if (request.Type == "transfer" && request.AccountId == request.ToAccountId)
+            return BadRequest("Transfer accounts must be different.");
+
         var recurring = await _recurringService.CreateAsync(UserId, request);
         return StatusCode(201, recurring);
     }
@@ -37,6 +42,11 @@ public class RecurringController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateRecurringTransactionRequest request)
     {
+        if (request.Type == "transfer" && (request.AccountId is null || request.ToAccountId is null))
+            return BadRequest("Transfers require both AccountId and ToAccountId.");
+        if (request.Type == "transfer" && request.AccountId == request.ToAccountId)
+            return BadRequest("Transfer accounts must be different.");
+
         var recurring = await _recurringService.UpdateAsync(UserId, id, request);
         if (recurring is null) return NotFound();
         return Ok(recurring);

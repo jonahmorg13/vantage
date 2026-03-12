@@ -33,6 +33,7 @@ public class RecurringTransactionService : IRecurringTransactionService
             Type = request.Type,
             CategoryId = request.CategoryId,
             AccountId = request.AccountId,
+            ToAccountId = request.ToAccountId,
             DayOfMonth = request.DayOfMonth,
             IsActive = request.IsActive,
             UserId = userId,
@@ -56,13 +57,25 @@ public class RecurringTransactionService : IRecurringTransactionService
                     DateTime.UtcNow.Year, DateTime.UtcNow.Month));
                 var date = $"{currentMonthKey}-{day:D2}";
 
+                int? resolvedCategoryId = null;
+                if (recurring.CategoryId.HasValue)
+                {
+                    resolvedCategoryId = await _db.MonthBudgets
+                        .Where(m => m.UserId == userId && m.MonthKey == currentMonthKey)
+                        .SelectMany(m => m.Categories)
+                        .Where(c => c.TemplateId == recurring.CategoryId)
+                        .Select(c => (int?)c.Id)
+                        .FirstOrDefaultAsync();
+                }
+
                 _db.Transactions.Add(new Transaction
                 {
                     Name = recurring.Name,
                     Amount = recurring.Amount,
                     Type = recurring.Type,
-                    CategoryId = recurring.CategoryId,
+                    CategoryId = resolvedCategoryId,
                     AccountId = recurring.AccountId,
+                    ToAccountId = recurring.ToAccountId,
                     Date = date,
                     MonthKey = currentMonthKey,
                     RecurringId = recurring.Id,
@@ -88,6 +101,7 @@ public class RecurringTransactionService : IRecurringTransactionService
         if (request.Type is not null) recurring.Type = request.Type;
         if (request.CategoryId.HasValue) recurring.CategoryId = request.CategoryId.Value;
         if (request.AccountId.HasValue) recurring.AccountId = request.AccountId.Value;
+        if (request.ToAccountId.HasValue) recurring.ToAccountId = request.ToAccountId.Value;
         if (request.DayOfMonth.HasValue) recurring.DayOfMonth = request.DayOfMonth.Value;
         if (request.IsActive.HasValue) recurring.IsActive = request.IsActive.Value;
         recurring.UpdatedAt = DateTime.UtcNow;
@@ -114,6 +128,7 @@ public class RecurringTransactionService : IRecurringTransactionService
         Type = r.Type,
         CategoryId = r.CategoryId,
         AccountId = r.AccountId,
+        ToAccountId = r.ToAccountId,
         DayOfMonth = r.DayOfMonth,
         IsActive = r.IsActive,
         CreatedAt = r.CreatedAt.ToString("o"),
