@@ -80,6 +80,7 @@ export function AccountsPage() {
   })
   const [accountForm, setAccountForm] = useState<AccountFormState>(defaultAccountForm())
   const [submitted, setSubmitted] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   function openEditAccount(account: Account) {
     setSubmitted(false)
@@ -255,10 +256,27 @@ export function AccountsPage() {
                     >
                       Edit
                     </Button>
-                    {!account.isDefault && (
+                    {!account.isDefault && deletingId === account.id ? (
+                      <>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setDeletingId(null)}
+                          className="text-xs py-1.5 px-3"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => { deleteAccount(account.id); setDeletingId(null) }}
+                          className="text-xs py-1.5 px-3"
+                        >
+                          Confirm
+                        </Button>
+                      </>
+                    ) : !account.isDefault && (
                       <Button
                         variant="danger"
-                        onClick={() => deleteAccount(account.id)}
+                        onClick={() => setDeletingId(account.id)}
                         className="text-xs py-1.5 px-3"
                       >
                         Delete
@@ -365,63 +383,65 @@ export function AccountsPage() {
         onClose={closeAccountModal}
         title={accountModal.editId !== null ? 'Edit Account' : 'Add Account'}
       >
-        <FormGroup label="Account Name" error={submitted ? nameError : ''}>
-          <FormInput
-            type="text"
-            value={accountForm.name}
-            onChange={(e) => setAccountForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="e.g. Chase Checking"
-          />
-        </FormGroup>
-        <FormGroup label="Account Type">
-          <FormSelect
-            value={accountForm.accountType}
-            onChange={(e) =>
-              setAccountForm((f) => ({
-                ...f,
-                accountType: e.target.value as Account['accountType'],
-              }))
-            }
-          >
-            {(Object.keys(ACCOUNT_TYPE_LABELS) as Account['accountType'][]).map((t) => (
-              <option key={t} value={t}>
-                {ACCOUNT_TYPE_LABELS[t]}
-              </option>
-            ))}
-          </FormSelect>
-        </FormGroup>
-        <FormGroup label="Color">
-          <div className="flex gap-2 flex-wrap">
-            {DEFAULT_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setAccountForm((f) => ({ ...f, color: c }))}
-                className="w-7 h-7 rounded-full border-2 transition-all duration-150"
-                style={{
-                  background: c,
-                  borderColor: accountForm.color === c ? '#fff' : 'transparent',
-                  outline: accountForm.color === c ? `2px solid ${c}` : 'none',
-                }}
-              />
-            ))}
+        <form onSubmit={(e) => { e.preventDefault(); saveAccount() }}>
+          <FormGroup label="Account Name" error={submitted ? nameError : ''}>
+            <FormInput
+              type="text"
+              value={accountForm.name}
+              onChange={(e) => setAccountForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Chase Checking"
+            />
+          </FormGroup>
+          <FormGroup label="Account Type">
+            <FormSelect
+              value={accountForm.accountType}
+              onChange={(e) =>
+                setAccountForm((f) => ({
+                  ...f,
+                  accountType: e.target.value as Account['accountType'],
+                }))
+              }
+            >
+              {(Object.keys(ACCOUNT_TYPE_LABELS) as Account['accountType'][]).map((t) => (
+                <option key={t} value={t}>
+                  {ACCOUNT_TYPE_LABELS[t]}
+                </option>
+              ))}
+            </FormSelect>
+          </FormGroup>
+          <FormGroup label="Color">
+            <div className="flex gap-2 flex-wrap">
+              {DEFAULT_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setAccountForm((f) => ({ ...f, color: c }))}
+                  className="w-7 h-7 rounded-full border-2 transition-all duration-150"
+                  style={{
+                    background: c,
+                    borderColor: accountForm.color === c ? '#fff' : 'transparent',
+                    outline: accountForm.color === c ? `2px solid ${c}` : 'none',
+                  }}
+                />
+              ))}
+            </div>
+          </FormGroup>
+          <FormGroup label="Initial Balance">
+            <MoneyInput
+              value={accountForm.initialBalance}
+              onChange={(v) => setAccountForm((f) => ({ ...f, initialBalance: v }))}
+              placeholder="0.00"
+            />
+          </FormGroup>
+          <div className="flex gap-3 mt-6 justify-end">
+            <Button variant="secondary" type="button" onClick={closeAccountModal}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              {accountModal.editId !== null ? 'Save Changes' : 'Add Account'}
+            </Button>
           </div>
-        </FormGroup>
-        <FormGroup label="Initial Balance">
-          <MoneyInput
-            value={accountForm.initialBalance}
-            onChange={(v) => setAccountForm((f) => ({ ...f, initialBalance: v }))}
-            placeholder="0.00"
-          />
-        </FormGroup>
-        <div className="flex gap-3 mt-6 justify-end">
-          <Button variant="secondary" onClick={closeAccountModal}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={saveAccount}>
-            {accountModal.editId !== null ? 'Save Changes' : 'Add Account'}
-          </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   )

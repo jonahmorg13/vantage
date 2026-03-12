@@ -202,74 +202,76 @@ export function RecurringManager() {
         onClose={() => setModalOpen(false)}
         title={editing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       >
-        <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
-          <FormInput
-            type="text"
-            placeholder="e.g. Roth IRA"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </FormGroup>
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
+        <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+          <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
             <FormInput
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              type="text"
+              placeholder="e.g. Roth IRA"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </FormGroup>
-          <FormGroup label="Day of Month" error={submitted ? dayError : ''}>
-            <FormInput
-              type="number"
-              min="1"
-              max="31"
-              value={dayOfMonth}
-              onChange={(e) => setDayOfMonth(e.target.value)}
-            />
-          </FormGroup>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Type">
-            <FormSelect
-              value={type}
-              onChange={(e) => setType(e.target.value as 'expense' | 'income')}
-            >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
-            </FormSelect>
-          </FormGroup>
-          <FormGroup label="Budget Item">
-            <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
-        </div>
-        {state.accounts.length > 0 && (
-          <FormGroup label="Account (optional)">
-            <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-              <option value={0}>None</option>
-              {state.accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
-        )}
-        <div className="flex gap-3 mt-6">
-          <Button variant="secondary" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="flex-1 !py-3">
-            {editing ? 'Save Changes' : 'Add Recurring Transaction'}
-          </Button>
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
+              <FormInput
+                type="number"
+                placeholder="0.00"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup label="Day of Month" error={submitted ? dayError : ''}>
+              <FormInput
+                type="number"
+                min="1"
+                max="31"
+                value={dayOfMonth}
+                onChange={(e) => setDayOfMonth(e.target.value)}
+              />
+            </FormGroup>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="Type">
+              <FormSelect
+                value={type}
+                onChange={(e) => setType(e.target.value as 'expense' | 'income')}
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </FormSelect>
+            </FormGroup>
+            <FormGroup label="Budget Item">
+              <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormGroup>
+          </div>
+          {state.accounts.length > 0 && (
+            <FormGroup label="Account (optional)">
+              <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+                <option value={0}>None</option>
+                {state.accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormGroup>
+          )}
+          <div className="flex gap-3 mt-6">
+            <Button variant="secondary" type="button" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1 !py-3">
+              {editing ? 'Save Changes' : 'Add Recurring Transaction'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </>
   )

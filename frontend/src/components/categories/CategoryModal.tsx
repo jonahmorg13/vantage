@@ -85,47 +85,49 @@ export function CategoryModal({ open, onClose, editCategory }: CategoryModalProp
 
   return (
     <Modal open={open} onClose={onClose} title={editCategory ? 'Edit Budget Item' : 'Add Budget Item'}>
-      <FormGroup label="Name" error={submitted ? nameError : ''}>
-        <FormInput
-          type="text"
-          placeholder="e.g. Groceries"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </FormGroup>
-      <div className="grid grid-cols-2 gap-4">
-        <FormGroup label="Budget Amount ($)">
-          <MoneyInput value={budgetAmount} onChange={setBudgetAmount} placeholder="300.00" />
+      <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+        <FormGroup label="Name" error={submitted ? nameError : ''}>
+          <FormInput
+            type="text"
+            placeholder="e.g. Groceries"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </FormGroup>
-        <FormGroup label="Spend Limit ($)">
-          <MoneyInput value={spendLimit} onChange={setSpendLimit} placeholder="Same as budget" />
-        </FormGroup>
-      </div>
-      <FormGroup label="Color">
-        <div className="flex gap-2 flex-wrap">
-          {CATEGORY_COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className="w-7 h-7 rounded-full border-2 transition-all duration-150"
-              style={{
-                background: c,
-                borderColor: color === c ? '#fff' : 'transparent',
-                outline: color === c ? `2px solid ${c}` : 'none',
-              }}
-            />
-          ))}
+        <div className="grid grid-cols-2 gap-4">
+          <FormGroup label="Budget Amount ($)">
+            <MoneyInput value={budgetAmount} onChange={setBudgetAmount} placeholder="300.00" />
+          </FormGroup>
+          <FormGroup label="Spend Limit ($)">
+            <MoneyInput value={spendLimit} onChange={setSpendLimit} placeholder="Same as budget" />
+          </FormGroup>
         </div>
-      </FormGroup>
-      <div className="flex gap-2.5 mt-6">
-        <Button variant="secondary" onClick={onClose} className="flex-1 !py-3">
-          Cancel
-        </Button>
-        <Button onClick={handleSave} className="flex-1 !py-3">
-          {editCategory ? 'Save Changes' : 'Add Item'}
-        </Button>
-      </div>
+        <FormGroup label="Color">
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORY_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className="w-7 h-7 rounded-full border-2 transition-all duration-150"
+                style={{
+                  background: c,
+                  borderColor: color === c ? '#fff' : 'transparent',
+                  outline: color === c ? `2px solid ${c}` : 'none',
+                }}
+              />
+            ))}
+          </div>
+        </FormGroup>
+        <div className="flex gap-2.5 mt-6">
+          <Button variant="secondary" type="button" onClick={onClose} className="flex-1 !py-3">
+            Cancel
+          </Button>
+          <Button type="submit" className="flex-1 !py-3">
+            {editCategory ? 'Save Changes' : 'Add Item'}
+          </Button>
+        </div>
+      </form>
     </Modal>
   )
 }

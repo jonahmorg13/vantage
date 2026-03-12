@@ -28,7 +28,7 @@ export function IncomeSettings() {
       <div className="p-6">
         <FormGroup label="Default Monthly Budget">
           <div className="flex items-center gap-3 max-w-xs">
-            <MoneyInput value={value} onChange={setValue} />
+            <MoneyInput value={value} onChange={setValue} onKeyDown={(e) => { if (e.key === 'Enter' && value !== savedValue) handleSave() }} />
             {value !== savedValue && <Button onClick={handleSave}>Save</Button>}
           </div>
         </FormGroup>
