@@ -219,95 +219,97 @@ export function RecurringManager() {
         onClose={() => setModalOpen(false)}
         title={editing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       >
-        <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
-          <FormInput
-            type="text"
-            placeholder="e.g. Roth IRA"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </FormGroup>
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
+        <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+          <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
             <FormInput
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              type="text"
+              placeholder="e.g. Roth IRA"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </FormGroup>
-          <FormGroup label="Day of Month" error={submitted ? dayError : ''}>
-            <FormInput
-              type="number"
-              min="1"
-              max="31"
-              value={dayOfMonth}
-              onChange={(e) => setDayOfMonth(e.target.value)}
-            />
-          </FormGroup>
-        </div>
-        <FormGroup label="Type">
-          <FormSelect
-            value={type}
-            onChange={(e) => setType(e.target.value as 'expense' | 'income' | 'transfer')}
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            {state.accounts.length >= 2 && <option value="transfer">Transfer</option>}
-          </FormSelect>
-        </FormGroup>
-        {type !== 'income' && (
-          <FormGroup label={type === 'transfer' ? 'Budget Item (optional)' : 'Budget Item'}>
-            <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
-              <option value={0}>None</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
+              <FormInput
+                type="number"
+                placeholder="0.00"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup label="Day of Month" error={submitted ? dayError : ''}>
+              <FormInput
+                type="number"
+                min="1"
+                max="31"
+                value={dayOfMonth}
+                onChange={(e) => setDayOfMonth(e.target.value)}
+              />
+            </FormGroup>
+          </div>
+          <FormGroup label="Type">
+            <FormSelect
+              value={type}
+              onChange={(e) => setType(e.target.value as 'expense' | 'income' | 'transfer')}
+            >
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+              {state.accounts.length >= 2 && <option value="transfer">Transfer</option>}
             </FormSelect>
           </FormGroup>
-        )}
-        {type === 'transfer' ? (
-          <>
-            <FormGroup label="From Account" error={submitted ? fromAccountError : ''}>
+          {type !== 'income' && (
+            <FormGroup label={type === 'transfer' ? 'Budget Item (optional)' : 'Budget Item'}>
+              <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+                <option value={0}>None</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormGroup>
+          )}
+          {type === 'transfer' ? (
+            <>
+              <FormGroup label="From Account" error={submitted ? fromAccountError : ''}>
+                <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+                  <option value={0}>Select account</option>
+                  {state.accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </FormSelect>
+              </FormGroup>
+              <FormGroup label="To Account" error={submitted ? toAccountError : ''}>
+                <FormSelect value={toAccountId} onChange={(e) => setToAccountId(Number(e.target.value))}>
+                  <option value={0}>Select account</option>
+                  {state.accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </FormSelect>
+              </FormGroup>
+            </>
+          ) : state.accounts.length > 0 ? (
+            <FormGroup label="Account (optional)">
               <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-                <option value={0}>Select account</option>
+                <option value={0}>None</option>
                 {state.accounts.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
                 ))}
               </FormSelect>
             </FormGroup>
-            <FormGroup label="To Account" error={submitted ? toAccountError : ''}>
-              <FormSelect value={toAccountId} onChange={(e) => setToAccountId(Number(e.target.value))}>
-                <option value={0}>Select account</option>
-                {state.accounts.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </FormSelect>
-            </FormGroup>
-          </>
-        ) : state.accounts.length > 0 ? (
-          <FormGroup label="Account (optional)">
-            <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-              <option value={0}>None</option>
-              {state.accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
-        ) : null}
-        <div className="flex gap-3 mt-6">
-          <Button variant="secondary" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="flex-1 !py-3">
-            {editing ? 'Save Changes' : 'Add Recurring Transaction'}
-          </Button>
-        </div>
+          ) : null}
+          <div className="flex gap-3 mt-6">
+            <Button variant="secondary" type="button" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1 !py-3">
+              {editing ? 'Save Changes' : 'Add Recurring Transaction'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </>
   )

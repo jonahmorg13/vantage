@@ -21,19 +21,23 @@ export function CategoryTemplates() {
 
   const [name, setName] = useState('')
   const [budget, setBudget] = useState('')
+  const [limit, setLimit] = useState('')
   const [color, setColor] = useState('#7c6dfa')
   const [submitted, setSubmitted] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   function openModal(template?: CategoryTemplate) {
     if (template) {
       setEditing(template)
       setName(template.name)
       setBudget(template.defaultBudgetAmount.toString())
+      setLimit('')
       setColor(template.color)
     } else {
       setEditing(null)
       setName('')
       setBudget('')
+      setLimit('')
       setColor(
         '#' +
           Math.floor(Math.random() * 0xffffff)
@@ -139,20 +143,41 @@ export function CategoryTemplates() {
                     {format(t.defaultBudgetAmount)}
                   </td>
                   <td className="px-6 py-3 border-b border-white/[0.03]">
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => openModal(t)}
-                        className="bg-transparent border-none text-text3 cursor-pointer text-sm p-1.5 px-2 rounded transition-all hover:bg-accent/15 hover:text-accent leading-none"
-                      >
-                        ✎
-                      </button>
-                      <button
-                        onClick={() => { settingsRepo.deleteTemplate(t.id); showToast('Template deleted') }}
-                        className="bg-transparent border-none text-text3 cursor-pointer text-lg p-1 px-2 rounded transition-all hover:bg-danger/15 hover:text-danger leading-none"
-                      >
-                        ×
-                      </button>
-                    </div>
+                    {deletingId === t.id ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setDeletingId(null)}
+                          className="text-xs text-text3 bg-surface3 px-2.5 py-1 rounded border border-border hover:bg-surface2 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => {
+                            settingsRepo.deleteTemplate(t.id)
+                            setDeletingId(null)
+                            showToast('Template deleted')
+                          }}
+                          className="text-xs text-danger bg-danger/10 px-2.5 py-1 rounded border border-danger/30 hover:bg-danger/20 transition-colors cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => openModal(t)}
+                          className="bg-transparent border-none text-text3 cursor-pointer text-sm p-1.5 px-2 rounded transition-all hover:bg-accent/15 hover:text-accent leading-none"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          onClick={() => setDeletingId(t.id)}
+                          className="bg-transparent border-none text-text3 cursor-pointer text-lg p-1 px-2 rounded transition-all hover:bg-danger/15 hover:text-danger leading-none"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -167,39 +192,52 @@ export function CategoryTemplates() {
         onClose={() => setModalOpen(false)}
         title={editing ? 'Edit Budget Template' : 'Add Budget Template'}
       >
-        <FormGroup label="Name" error={submitted ? nameError : ''}>
-          <FormInput
-            type="text"
-            placeholder="e.g. Groceries"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup label="Default Budget ($)">
-          <FormInput
-            type="number"
-            placeholder="300.00"
-            step="0.01"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup label="Color">
-          <FormInput
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="!h-[42px] cursor-pointer"
-          />
-        </FormGroup>
-        <div className="flex gap-3 mt-6">
-          <Button variant="secondary" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="flex-1 !py-3">
-            {editing ? 'Save Changes' : 'Add Template'}
-          </Button>
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+          <FormGroup label="Name" error={submitted ? nameError : ''}>
+            <FormInput
+              type="text"
+              placeholder="e.g. Groceries"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FormGroup>
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="Default Budget ($)">
+              <FormInput
+                type="number"
+                placeholder="300.00"
+                step="0.01"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup label="Default Spend Limit ($)">
+              <FormInput
+                type="number"
+                placeholder="Same as budget"
+                step="0.01"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+              />
+            </FormGroup>
+          </div>
+          <FormGroup label="Color">
+            <FormInput
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="!h-[42px] cursor-pointer"
+            />
+          </FormGroup>
+          <div className="flex gap-3 mt-6">
+            <Button variant="secondary" type="button" onClick={() => setModalOpen(false)} className="flex-1 !py-3">
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1 !py-3">
+              {editing ? 'Save Changes' : 'Add Template'}
+            </Button>
+          </div>
+        </form>
       </Modal>
 
       {/* Copy from month modal */}

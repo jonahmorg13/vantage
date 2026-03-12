@@ -35,6 +35,7 @@ export function CurrencySettings() {
                 type="text"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && hasChanged) save() }}
                 maxLength={4}
                 className="w-20 text-center"
               />

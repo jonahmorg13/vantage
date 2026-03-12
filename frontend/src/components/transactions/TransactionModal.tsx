@@ -112,98 +112,77 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
       onClose={onClose}
       title={editTransaction ? 'Edit Transaction' : 'Add Transaction'}
     >
-      <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
-        <FormInput
-          type="text"
-          placeholder="e.g. Whole Foods"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </FormGroup>
-      <div className="grid grid-cols-2 gap-4">
-        <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
-          <MoneyInput value={amount} onChange={setAmount} />
+      <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+        <FormGroup label="Name / Description" error={submitted ? nameError : ''}>
+          <FormInput
+            type="text"
+            placeholder="e.g. Whole Foods"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </FormGroup>
-        <FormGroup label="Date" error={submitted ? dateError : ''}>
-          <FormInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <div className="grid grid-cols-2 gap-4">
+          <FormGroup label="Amount ($)" error={submitted ? amountError : ''}>
+            <MoneyInput value={amount} onChange={setAmount} />
+          </FormGroup>
+          <FormGroup label="Date" error={submitted ? dateError : ''}>
+            <FormInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </FormGroup>
+        </div>
+
+        <FormGroup label="Type">
+          <FormSelect value={type} onChange={(e) => setType(e.target.value as typeof type)}>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            {state.accounts.length >= 2 && <option value="transfer">Transfer</option>}
+          </FormSelect>
         </FormGroup>
-      </div>
 
-      <FormGroup label="Type">
-        <FormSelect value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-          {state.accounts.length >= 2 && <option value="transfer">Transfer</option>}
-        </FormSelect>
-      </FormGroup>
-
-      {isTransfer ? (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <FormGroup label="From Account" error={submitted ? fromAccountError : ''}>
-              <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-                <option value={0} disabled>
-                  Select account
-                </option>
-                {state.accounts.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
+        {isTransfer ? (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <FormGroup label="From Account" error={submitted ? fromAccountError : ''}>
+                <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+                  <option value={0} disabled>
+                    Select account
                   </option>
-                ))}
-              </FormSelect>
-            </FormGroup>
-            <FormGroup label="To Account" error={submitted ? toAccountError : ''}>
-              <FormSelect
-                value={toAccountId}
-                onChange={(e) => setToAccountId(Number(e.target.value))}
-              >
-                <option value={0} disabled>
-                  Select account
-                </option>
-                {state.accounts
-                  .filter((a) => a.id !== accountId)
-                  .map((a) => (
+                  {state.accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
                     </option>
                   ))}
+                </FormSelect>
+              </FormGroup>
+              <FormGroup label="To Account" error={submitted ? toAccountError : ''}>
+                <FormSelect
+                  value={toAccountId}
+                  onChange={(e) => setToAccountId(Number(e.target.value))}
+                >
+                  <option value={0} disabled>
+                    Select account
+                  </option>
+                  {state.accounts
+                    .filter((a) => a.id !== accountId)
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))}
+                </FormSelect>
+              </FormGroup>
+            </div>
+            <FormGroup label="Budget Item (optional)">
+              <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+                <option value={0}>None</option>
+                {month?.categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </FormSelect>
             </FormGroup>
-          </div>
-          <FormGroup label="Budget Item (optional)">
-            <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
-              <option value={0}>None</option>
-              {month?.categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
-        </>
-      ) : type === 'income' ? (
-        <FormGroup label="Account (optional)">
-          <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
-            <option value={0}>None</option>
-            {state.accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </FormSelect>
-        </FormGroup>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
-          <FormGroup label="Budget Item (optional)">
-            <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
-              <option value={0}>None</option>
-              {month?.categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </FormSelect>
-          </FormGroup>
+          </>
+        ) : type === 'income' ? (
           <FormGroup label="Account (optional)">
             <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
               <option value={0}>None</option>
@@ -214,17 +193,40 @@ export function TransactionModal({ open, onClose, editTransaction }: Transaction
               ))}
             </FormSelect>
           </FormGroup>
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <FormGroup label="Budget Item (optional)">
+              <FormSelect value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+                <option value={0}>None</option>
+                {month?.categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormGroup>
+            <FormGroup label="Account (optional)">
+              <FormSelect value={accountId} onChange={(e) => setAccountId(Number(e.target.value))}>
+                <option value={0}>None</option>
+                {state.accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormGroup>
+          </div>
+        )}
 
-      <div className="flex gap-2.5 mt-6">
-        <Button variant="secondary" onClick={onClose} className="flex-1 !py-3">
-          Cancel
-        </Button>
-        <Button onClick={handleSave} className="flex-1 !py-3">
-          {editTransaction ? 'Save Changes' : 'Add Transaction'}
-        </Button>
-      </div>
+        <div className="flex gap-2.5 mt-6">
+          <Button variant="secondary" type="button" onClick={onClose} className="flex-1 !py-3">
+            Cancel
+          </Button>
+          <Button type="submit" className="flex-1 !py-3">
+            {editTransaction ? 'Save Changes' : 'Add Transaction'}
+          </Button>
+        </div>
+      </form>
     </Modal>
   )
 }

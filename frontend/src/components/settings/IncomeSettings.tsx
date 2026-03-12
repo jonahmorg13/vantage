@@ -36,7 +36,7 @@ export function IncomeSettings() {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text3 font-mono pointer-events-none">
                 {currencySymbol}
               </span>
-              <MoneyInput value={value} onChange={setValue} className="pl-8" />
+              <MoneyInput value={value} onChange={setValue} onKeyDown={(e) => { if (e.key === 'Enter' && value !== savedValue) handleSave() }} className="pl-8" />
             </div>
             {value !== savedValue && <Button onClick={handleSave}>Save</Button>}
           </div>
