@@ -9,6 +9,25 @@ import type {
 } from '../types'
 import { nowISO } from '../utils/format'
 
+/** Resolve a category template ID to the actual month category ID */
+function resolveCategory(
+  templateId: number | undefined,
+  monthCategories: Category[] | undefined,
+  templates: CategoryTemplate[]
+): number | undefined {
+  if (templateId == null || !monthCategories) return undefined
+  // Try templateId match first (new months)
+  const byTemplate = monthCategories.find((c) => c.templateId === templateId)
+  if (byTemplate) return byTemplate.id
+  // Fallback: match by name for months created before templateId was added
+  const template = templates.find((t) => t.id === templateId)
+  if (template) {
+    const byName = monthCategories.find((c) => c.name === template.name)
+    if (byName) return byName.id
+  }
+  return undefined
+}
+
 export type AppAction =
   | { type: 'SET_MONTH'; monthKey: string }
   | { type: 'INIT_MONTH'; monthKey: string }
@@ -88,9 +107,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           name: r.name,
           amount: r.amount,
           type: r.type,
-          categoryId: r.categoryId != null
-            ? categories.find((c) => c.templateId === r.categoryId)?.id
-            : undefined,
+          categoryId: resolveCategory(r.categoryId, categories, state.settings.categoryTemplates),
           accountId: r.accountId,
           toAccountId: r.toAccountId,
           date: `${action.monthKey}-${String(r.dayOfMonth).padStart(2, '0')}`,
@@ -260,9 +277,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
       // If active, generate a pending transaction for the current month immediately
       const currentMonth = state.monthBudgets.find((m) => m.monthKey === state.currentMonthKey)
-      const resolvedCategoryId = newRecurring.categoryId != null
-        ? currentMonth?.categories.find((c) => c.templateId === newRecurring.categoryId)?.id
-        : undefined
 
       const pendingTx: Transaction | null = newRecurring.isActive
         ? {
@@ -270,7 +284,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             name: newRecurring.name,
             amount: newRecurring.amount,
             type: newRecurring.type,
-            categoryId: resolvedCategoryId,
+            categoryId: resolveCategory(newRecurring.categoryId, currentMonth?.categories, state.settings.categoryTemplates),
             accountId: newRecurring.accountId,
             toAccountId: newRecurring.toAccountId,
             date: `${state.currentMonthKey}-${String(newRecurring.dayOfMonth).padStart(2, '0')}`,

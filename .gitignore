@@ -127,3 +127,4 @@ backend/.cr/
 *.p12
 *.key
 *.cer
+.claude/worktrees/

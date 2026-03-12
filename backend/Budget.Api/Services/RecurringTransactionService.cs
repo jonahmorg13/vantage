@@ -60,12 +60,26 @@ public class RecurringTransactionService : IRecurringTransactionService
                 int? resolvedCategoryId = null;
                 if (recurring.CategoryId.HasValue)
                 {
-                    resolvedCategoryId = await _db.MonthBudgets
+                    var monthCategories = await _db.MonthBudgets
                         .Where(m => m.UserId == userId && m.MonthKey == currentMonthKey)
                         .SelectMany(m => m.Categories)
-                        .Where(c => c.TemplateId == recurring.CategoryId)
-                        .Select(c => (int?)c.Id)
-                        .FirstOrDefaultAsync();
+                        .ToListAsync();
+
+                    // Try templateId match first, then fall back to name match
+                    resolvedCategoryId = monthCategories
+                        .FirstOrDefault(c => c.TemplateId == recurring.CategoryId)?.Id;
+
+                    if (resolvedCategoryId is null)
+                    {
+                        var templateName = await _db.CategoryTemplates
+                            .Where(t => t.Id == recurring.CategoryId.Value && t.UserId == userId)
+                            .Select(t => t.Name)
+                            .FirstOrDefaultAsync();
+
+                        if (templateName is not null)
+                            resolvedCategoryId = monthCategories
+                                .FirstOrDefault(c => c.Name == templateName)?.Id;
+                    }
                 }
 
                 _db.Transactions.Add(new Transaction
