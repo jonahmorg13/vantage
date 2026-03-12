@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppContext } from '../../context/AppContext'
 import { useCurrentMonth } from '../../hooks/useMonthBudget'
 import { useRepositories } from '../../repositories/RepositoryContext'
@@ -18,6 +18,22 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
   const format = useCurrency()
   const { showToast } = useToast()
   const [percentages, setPercentages] = useState<Record<number, string>>({})
+  const [confirming, setConfirming] = useState(false)
+
+  // Pre-populate percentages from current budget amounts when opened
+  useEffect(() => {
+    if (open && month && month.takeHomePay > 0) {
+      const initial: Record<number, string> = {}
+      for (const cat of month.categories) {
+        if (cat.budgetAmount > 0) {
+          const pct = (cat.budgetAmount / month.takeHomePay) * 100
+          initial[cat.id] = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1)
+        }
+      }
+      setPercentages(initial)
+    }
+    if (open) setConfirming(false)
+  }, [open, month])
 
   if (!open || !month) return null
 
@@ -27,6 +43,7 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
   function handlePctChange(id: number, val: string) {
     const filtered = val.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
     setPercentages((prev) => ({ ...prev, [id]: filtered }))
+    setConfirming(false)
   }
 
   function calcAmount(pctStr: string): number {
@@ -40,18 +57,29 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
     return sum + (isNaN(n) ? 0 : n)
   }, 0)
 
+  // Compute which categories actually changed
+  const changes = Object.entries(percentages)
+    .filter(([, v]) => v !== '' && !isNaN(parseFloat(v)))
+    .map(([idStr, pctStr]) => {
+      const id = parseInt(idStr)
+      const newAmount = Math.round(calcAmount(pctStr) * 100) / 100
+      const cat = categories.find((c) => c.id === id)
+      const oldAmount = cat?.budgetAmount ?? 0
+      return { id, name: cat?.name ?? '', color: cat?.color ?? '#555', oldAmount, newAmount }
+    })
+    .filter((c) => Math.abs(c.newAmount - c.oldAmount) >= 0.01)
+
   async function handleApply() {
-    const updates = Object.entries(percentages).filter(([, v]) => v !== '' && !isNaN(parseFloat(v)))
+    if (!confirming) {
+      setConfirming(true)
+      return
+    }
     await Promise.all(
-      updates.map(([idStr, pctStr]) => {
-        const id = parseInt(idStr)
-        const amount = Math.round(calcAmount(pctStr) * 100) / 100
-        return categoriesRepo.update(state.currentMonthKey, id, {
-          budgetAmount: amount,
-        })
-      })
+      changes.map((c) =>
+        categoriesRepo.update(state.currentMonthKey, c.id, { budgetAmount: c.newAmount })
+      )
     )
-    showToast(`Allocated ${updates.length} ${updates.length === 1 ? 'category' : 'categories'}`)
+    showToast(`Updated ${changes.length} ${changes.length === 1 ? 'category' : 'categories'}`)
     onClose()
   }
 
@@ -100,16 +128,35 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
           })}
         </div>
 
+        {confirming && changes.length > 0 && (
+          <div className="mt-4 p-3 bg-accent4/10 border border-accent4/20 rounded-lg">
+            <p className="text-xs text-accent4 font-medium mb-2">
+              {changes.length} {changes.length === 1 ? 'category' : 'categories'} will change:
+            </p>
+            <div className="space-y-1">
+              {changes.map((c) => (
+                <div key={c.id} className="flex items-center gap-2 text-xs">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: c.color }} />
+                  <span className="text-text2 flex-1 truncate">{c.name}</span>
+                  <span className="text-text3 font-mono">{format(c.oldAmount)}</span>
+                  <span className="text-text3">&rarr;</span>
+                  <span className="text-text font-mono">{format(c.newAmount)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
           <span className={`text-sm font-mono ${totalPct > 100 ? 'text-danger' : 'text-text2'}`}>
             Total: {totalPct.toFixed(1)}%
           </span>
           <div className="flex gap-3">
-            <Button variant="secondary" onClick={onClose}>
-              Cancel
+            <Button variant="secondary" onClick={confirming ? () => setConfirming(false) : onClose}>
+              {confirming ? 'Back' : 'Cancel'}
             </Button>
-            <Button onClick={handleApply} disabled={totalPct === 0}>
-              Apply to Current Month
+            <Button onClick={handleApply} disabled={changes.length === 0}>
+              {confirming ? `Confirm (${changes.length})` : 'Apply to Current Month'}
             </Button>
           </div>
         </div>

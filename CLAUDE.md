@@ -40,6 +40,15 @@ Central `AppContext` (`frontend/src/context/`) uses `useReducer` with localStora
 
 Six main pages under `frontend/src/pages/`: Dashboard, Transactions, Categories, Accounts, Future, Settings.
 
+### Repository Pattern (Local vs API)
+
+`frontend/src/repositories/` abstracts data access behind interfaces (`ITransactionRepository`, `IRecurringRepository`, etc.). Controlled by `VITE_DATA_SOURCE`:
+
+- **`local`** (default): Repositories dispatch actions to `appReducer`, which creates/updates data in-memory and persists to localStorage. The reducer contains the full business logic (ID generation, pending transaction creation, etc.).
+- **`api`**: Repositories make REST calls to the backend, then dispatch actions to cache the server response in state. The backend owns the business logic; the reducer just stores what the API returns.
+
+When adding features, both paths must be updated: the reducer logic (for local mode) and the backend service (for API mode).
+
 ### Backend
 
 **Stack:** .NET 10 + ASP.NET Core + Entity Framework Core + SQL Server + ASP.NET Identity + JWT Auth
@@ -71,6 +80,8 @@ backend/Budget.Api/
 
 SQL Server Database Project (`backend/Budget.Database/`) using `Microsoft.Build.Sql` SDK v2.1.0. Schema is defined in `.sql` files under `Tables/` and deployed via dacpac.
 
+**Schema is deployed via dacpac, NOT EF Core migrations.** There are no migration files. To change the schema: edit the `.sql` files in `Tables/`, then run `./scripts/deploy-db.sh` to build and publish. The dacpac tool diffs against the live database and applies only the changes.
+
 All data entities include `UserId` foreign key to `AspNetUsers` for per-user data isolation.
 
 ### Integration Tests
@@ -90,3 +101,44 @@ Test categories: Auth (register, login, logout, refresh), Accounts, Categories, 
 ### OpenAPI Spec
 
 `/api/openapi.yaml` contains the full API specification.
+
+## Key Domain Concepts
+
+### Transaction Types
+
+Transactions have a `type` field: `expense`, `income`, or `transfer`.
+
+- **expense/income**: Optional `accountId` links to an account. Optional `categoryId` links to a budget category.
+- **transfer**: Requires both `accountId` (source) and `toAccountId` (destination). The backend validates this. Optional `categoryId` — transfers can count toward a budget category's spend limit (e.g., a checking-to-savings transfer counting against a "Savings" budget item).
+
+Account balances are calculated from `initialBalance` + confirmed transaction effects (income adds, expense subtracts, transfer subtracts from source / adds to destination).
+
+### Category Templates vs Month Categories
+
+These are two separate entities with **different ID spaces**:
+
+- **CategoryTemplates** (`settings.categoryTemplates`): User-defined templates in Settings. Recurring transactions store a template ID as their `categoryId`.
+- **Categories** (`monthBudget.categories`): Per-month instances created when a month is initialized from templates. Each category has a `templateId` field linking it back to the template it was created from.
+
+When generating pending transactions from recurring, the template ID must be **resolved** to the actual month category ID. The `resolveCategory` helper in `appReducer.ts` handles this: tries `templateId` match first, falls back to name matching for months created before `templateId` existed.
+
+### Recurring Transactions and Pending Workflow
+
+1. User creates a recurring transaction in Settings (stores template ID for category, supports expense/income/transfer types)
+2. When a new month is initialized (`INIT_MONTH` / `MonthService.InitAsync`), pending transactions are generated from all active recurring transactions
+3. When a recurring is created mid-month (`ADD_RECURRING` / `RecurringTransactionService.CreateAsync`), a pending transaction is also created for the current month
+4. Pending transactions appear in the `PendingRecurring` banner on the Transactions page
+5. User confirms (changes status to `confirmed`) or dismisses (deletes) each pending transaction
+
+Category ID resolution (template ID → actual month category ID) happens at step 2 and 3, not at confirm time.
+
+## Gotchas
+
+- **TypeScript `erasableSyntaxOnly`** is enabled — you cannot use class constructor parameter properties (`constructor(private x: number)`) or other non-erasable syntax.
+- **Port 5000 on macOS** conflicts with AirPlay Receiver (ControlCenter). Use port 5001 or disable AirPlay if the port is taken.
+- **SQL Server Docker image** is AMD64-only. On Apple Silicon it runs under Rosetta (may show a platform warning).
+- **Pre-existing lint warnings** — do not attempt to fix these, they are known and accepted:
+  - `react-hooks/set-state-in-effect` in CategoryModal, TransactionModal, Sidebar
+  - `@typescript-eslint/no-unused-expressions` in AlertsBanner
+  - `@typescript-eslint/no-explicit-any` in AppContext
+  - `react-refresh/only-export-components` in AppContext

@@ -24,6 +24,7 @@ export function CategoriesPage() {
   const [pctModalOpen, setPctModalOpen] = useState(false)
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
   const [takeHomePay, setTakeHomePay] = useState('')
+  const [confirmingSave, setConfirmingSave] = useState(false)
 
   useEffect(() => {
     if (month) setTakeHomePay(month.takeHomePay.toFixed(2))
@@ -36,6 +37,7 @@ export function CategoriesPage() {
   function handleBudgetChange(e: React.ChangeEvent<HTMLInputElement>) {
     const filtered = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
     setTakeHomePay(filtered)
+    setConfirmingSave(false)
   }
 
   function handleBudgetBlur() {
@@ -44,8 +46,13 @@ export function CategoriesPage() {
   }
 
   function saveBudget() {
+    if (!confirmingSave) {
+      setConfirmingSave(true)
+      return
+    }
     monthRepo.updateIncome(state.currentMonthKey, parseFloat(takeHomePay) || 0)
     showToast('Monthly budget updated')
+    setConfirmingSave(false)
   }
 
   function handleEdit(cat: Category) {
@@ -122,9 +129,16 @@ export function CategoriesPage() {
                   />
                 </div>
                 {budgetHasChanged && (
-                  <Button onClick={saveBudget} className="!py-1.5 text-sm">
-                    Save
-                  </Button>
+                  <>
+                    {confirmingSave && (
+                      <Button variant="secondary" onClick={() => { setTakeHomePay(month.takeHomePay.toFixed(2)); setConfirmingSave(false) }} className="!py-1.5 text-sm">
+                        Cancel
+                      </Button>
+                    )}
+                    <Button onClick={saveBudget} className="!py-1.5 text-sm">
+                      {confirmingSave ? 'Confirm' : 'Save'}
+                    </Button>
+                  </>
                 )}
               </>
             )}

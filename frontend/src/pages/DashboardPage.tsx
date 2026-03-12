@@ -18,6 +18,7 @@ export function DashboardPage() {
   const { showToast } = useToast()
   const month = useCurrentMonth()
   const [takeHomePay, setTakeHomePay] = useState('')
+  const [confirmingSave, setConfirmingSave] = useState(false)
 
   useEffect(() => {
     if (month) setTakeHomePay(month.takeHomePay.toFixed(2))
@@ -31,6 +32,7 @@ export function DashboardPage() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const filtered = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
     setTakeHomePay(filtered)
+    setConfirmingSave(false)
   }
 
   function handleBlur() {
@@ -39,8 +41,13 @@ export function DashboardPage() {
   }
 
   function save() {
+    if (!confirmingSave) {
+      setConfirmingSave(true)
+      return
+    }
     monthRepo.updateIncome(state.currentMonthKey, parseFloat(takeHomePay) || 0)
     showToast('Monthly budget updated')
+    setConfirmingSave(false)
   }
 
   return (
@@ -78,9 +85,16 @@ export function DashboardPage() {
                 />
               </div>
               {hasChanged && (
-                <Button onClick={save} className="whitespace-nowrap !py-2.5">
-                  Save
-                </Button>
+                <>
+                  {confirmingSave && (
+                    <Button variant="secondary" onClick={() => { setTakeHomePay(month.takeHomePay.toFixed(2)); setConfirmingSave(false) }} className="whitespace-nowrap !py-2.5">
+                      Cancel
+                    </Button>
+                  )}
+                  <Button onClick={save} className="whitespace-nowrap !py-2.5">
+                    {confirmingSave ? 'Confirm' : 'Save'}
+                  </Button>
+                </>
               )}
             </div>
           )}
