@@ -1,11 +1,11 @@
 ---
 name: deploy
-description: Start the app with docker compose
+description: Pull latest images from GHCR and start the app with docker compose
 disable-model-invocation: true
 allowed-tools: Bash
 ---
 
-Start the budget app using docker compose.
+Pull the latest images from GHCR and start the budget app using docker compose.
 
 1. Check if a `.env` file exists in the repo root.
    - If it does not exist, ask the user: "No .env file found. Run generate-env script to create one?"
@@ -13,18 +13,24 @@ Start the budget app using docker compose.
      - If no: warn the user that docker compose may fail without it
    - If it already exists, skip this step entirely
 
-2. Run docker compose:
+2. Pull the latest images from GHCR:
+
+   ```bash
+   docker compose pull
+   ```
+
+3. Start the services with the updated images:
 
    ```bash
    docker compose up -d
    ```
 
-3. Wait a few seconds, then show container status:
+4. Wait a few seconds, then show container status:
 
    ```bash
    docker compose ps
    ```
 
-4. Report which services are running and their ports.
+5. Report which services are running and their ports, and note any images that were updated.
 
 If any service fails to start, show its logs and report the error. If there are errors, try to solve them.
