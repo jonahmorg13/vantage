@@ -27,7 +27,7 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
       for (const cat of month.categories) {
         if (cat.budgetAmount > 0) {
           const pct = (cat.budgetAmount / month.takeHomePay) * 100
-          initial[cat.id] = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1)
+          initial[cat.id] = parseFloat(pct.toFixed(3)).toString()
         }
       }
       setPercentages(initial)
@@ -149,7 +149,7 @@ export function BudgetPercentageModal({ open, onClose }: Props) {
 
         <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
           <span className={`text-sm font-mono ${totalPct > 100 ? 'text-danger' : 'text-text2'}`}>
-            Total: {totalPct.toFixed(1)}%
+            Total: {parseFloat(totalPct.toFixed(3)).toString()}%
           </span>
           <div className="flex gap-3">
             <Button variant="secondary" onClick={confirming ? () => setConfirming(false) : onClose}>

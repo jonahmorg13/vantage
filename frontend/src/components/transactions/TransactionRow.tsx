@@ -42,8 +42,8 @@ export function TransactionRow({
     labelColor = account?.color ?? toAccount?.color ?? '#555'
     labelText = account && toAccount ? `${account.name} → ${toAccount.name}` : 'Transfer'
   } else {
-    labelColor = account?.color ?? cat?.color ?? '#555'
-    labelText = account ? account.name : (cat?.name ?? 'Uncategorized')
+    labelColor = cat?.color ?? account?.color ?? '#555'
+    labelText = cat ? cat.name : (account?.name ?? 'Uncategorized')
   }
 
   const amountColor =

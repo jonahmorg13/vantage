@@ -1,8 +1,10 @@
 services:
   frontend:
+    platform: linux/amd64
     build:
       context: ./frontend
 
   backend:
+    platform: linux/amd64
     build:
       context: ./backend

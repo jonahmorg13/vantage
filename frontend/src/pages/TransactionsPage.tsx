@@ -150,7 +150,7 @@ export function TransactionsPage() {
       {/* Mobile FAB */}
       <button
         onClick={() => setModalOpen(true)}
-        className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-accent text-bg text-2xl font-bold shadow-lg flex items-center justify-center transition-transform active:scale-95"
+        className="md:hidden fixed bottom-24 right-5 z-40 w-14 h-14 rounded-full bg-accent text-bg text-2xl font-bold shadow-lg flex items-center justify-center transition-transform active:scale-95"
         aria-label="Add transaction"
       >
         +

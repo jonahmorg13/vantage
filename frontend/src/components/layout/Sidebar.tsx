@@ -145,7 +145,7 @@ export function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-center flex-1 py-3 transition-all duration-150 ${
+              `flex items-center justify-center flex-1 py-6 transition-all duration-150 ${
                 isActive ? 'text-accent' : 'text-text3 hover:text-text'
               }`
             }
@@ -158,7 +158,7 @@ export function Sidebar() {
         <div ref={moreRef} className="flex items-center justify-center flex-1 relative">
           <button
             onClick={() => setMoreOpen((v) => !v)}
-            className={`flex items-center justify-center w-full py-3 transition-all duration-150 ${
+            className={`flex items-center justify-center w-full py-6 transition-all duration-150 ${
               isOverflowActive || moreOpen ? 'text-accent' : 'text-text3'
             }`}
           >

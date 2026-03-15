@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Panel } from '../components/ui/Panel'
 import { Modal, FormGroup, FormInput, FormSelect, MoneyInput } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
+import { AccountBalanceChart } from '../components/accounts/AccountBalanceChart'
 import { useAppContext } from '../context/AppContext'
 import { useRepositories } from '../repositories/RepositoryContext'
 import { useToast } from '../components/ui/Toast'
 import { useCurrency } from '../hooks/useCurrency'
+import { todayISO } from '../utils/format'
 import type { Account, Transaction } from '../types'
 
 const ACCOUNT_TYPE_LABELS: Record<Account['accountType'], string> = {
@@ -38,7 +41,8 @@ interface AccountFormState {
   accountType: Account['accountType']
   color: string
   initialBalance: string
-  currentBalance: string
+  adjustBalance: string
+  adjustDate: string
 }
 
 const defaultAccountForm = (): AccountFormState => ({
@@ -46,7 +50,8 @@ const defaultAccountForm = (): AccountFormState => ({
   accountType: 'checking',
   color: DEFAULT_COLORS[0],
   initialBalance: '0',
-  currentBalance: '',
+  adjustBalance: '',
+  adjustDate: todayISO(),
 })
 
 function getAccountBalance(account: Account, transactions: Transaction[]): number {
@@ -72,7 +77,7 @@ function getAccountActivity(account: Account, transactions: Transaction[]): Tran
 export function AccountsPage() {
   const format = useCurrency()
   const { state, isHydrating } = useAppContext()
-  const { accounts: accountRepo } = useRepositories()
+  const { accounts: accountRepo, transactions: txRepo } = useRepositories()
   const { showToast } = useToast()
   const { accounts, transactions } = state
 
@@ -83,16 +88,17 @@ export function AccountsPage() {
   const [accountForm, setAccountForm] = useState<AccountFormState>(defaultAccountForm())
   const [submitted, setSubmitted] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [expandedCharts, setExpandedCharts] = useState<Set<number>>(new Set())
 
   function openEditAccount(account: Account) {
     setSubmitted(false)
-    const balance = getAccountBalance(account, transactions)
     setAccountForm({
       name: account.name,
       accountType: account.accountType,
       color: account.color,
       initialBalance: String(account.initialBalance),
-      currentBalance: balance.toFixed(2),
+      adjustBalance: '',
+      adjustDate: todayISO(),
     })
     setAccountModal({ open: true, editId: account.id })
   }
@@ -103,20 +109,9 @@ export function AccountsPage() {
 
   const nameError = !accountForm.name.trim() ? 'Account name is required' : ''
 
-  function saveAccount() {
+  async function saveAccount() {
     setSubmitted(true)
     if (nameError) return
-    let initialBalance = parseFloat(accountForm.initialBalance) || 0
-
-    // If editing and user set a desired current balance, adjust initialBalance
-    if (accountModal.editId !== null && accountForm.currentBalance !== '') {
-      const account = accounts.find((a) => a.id === accountModal.editId)
-      if (account) {
-        const calculatedBalance = getAccountBalance(account, transactions)
-        const desiredBalance = parseFloat(accountForm.currentBalance) || 0
-        initialBalance = account.initialBalance + (desiredBalance - calculatedBalance)
-      }
-    }
 
     try {
       if (accountModal.editId !== null) {
@@ -124,10 +119,34 @@ export function AccountsPage() {
           name: accountForm.name,
           accountType: accountForm.accountType,
           color: accountForm.color,
-          initialBalance,
         })
+
+        // Create a balance adjustment transaction if requested
+        if (accountForm.adjustBalance !== '') {
+          const account = accounts.find((a) => a.id === accountModal.editId)
+          if (account) {
+            const currentBalance = getAccountBalance(account, transactions)
+            const desiredBalance = parseFloat(accountForm.adjustBalance) || 0
+            const diff = desiredBalance - currentBalance
+
+            if (diff !== 0) {
+              const adjustDate = accountForm.adjustDate || todayISO()
+              await txRepo.create({
+                name: 'Balance Adjustment',
+                amount: Math.abs(diff),
+                type: diff > 0 ? 'income' : 'expense',
+                accountId: account.id,
+                date: adjustDate,
+                monthKey: adjustDate.slice(0, 7),
+                status: 'confirmed',
+              })
+            }
+          }
+        }
+
         showToast('Account updated')
       } else {
+        const initialBalance = parseFloat(accountForm.initialBalance) || 0
         accountRepo.create({
           name: accountForm.name,
           accountType: accountForm.accountType,
@@ -342,6 +361,32 @@ export function AccountsPage() {
                     </div>
                   </div>
 
+                  {/* Balance History Chart */}
+                  <div className="mb-5">
+                    <button
+                      onClick={() =>
+                        setExpandedCharts((prev) => {
+                          const next = new Set(prev)
+                          next.has(account.id) ? next.delete(account.id) : next.add(account.id)
+                          return next
+                        })
+                      }
+                      className="flex items-center gap-1.5 text-xs text-text3 uppercase tracking-[0.1em] hover:text-text2 transition-colors cursor-pointer"
+                    >
+                      Balance History
+                      {expandedCharts.has(account.id) ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      )}
+                    </button>
+                    {expandedCharts.has(account.id) && (
+                      <div className="mt-3">
+                        <AccountBalanceChart account={account} transactions={transactions} />
+                      </div>
+                    )}
+                  </div>
+
                   {/* Activity list */}
                   {activity.length > 0 && (
                     <div>
@@ -441,21 +486,33 @@ export function AccountsPage() {
               ))}
             </div>
           </FormGroup>
-          <FormGroup label="Initial Balance">
-            <MoneyInput
-              value={accountForm.initialBalance}
-              onChange={(v) => setAccountForm((f) => ({ ...f, initialBalance: v }))}
-              placeholder="0.00"
-            />
-          </FormGroup>
-          {accountModal.editId !== null && (
-            <FormGroup label="Set Current Balance">
+          {accountModal.editId === null ? (
+            <FormGroup label="Initial Balance">
               <MoneyInput
-                value={accountForm.currentBalance}
-                onChange={(v) => setAccountForm((f) => ({ ...f, currentBalance: v }))}
-                placeholder="Leave blank to keep current"
+                value={accountForm.initialBalance}
+                onChange={(v) => setAccountForm((f) => ({ ...f, initialBalance: v }))}
+                placeholder="0.00"
               />
             </FormGroup>
+          ) : (
+            <>
+              <FormGroup label="Adjust Balance To">
+                <MoneyInput
+                  value={accountForm.adjustBalance}
+                  onChange={(v) => setAccountForm((f) => ({ ...f, adjustBalance: v }))}
+                  placeholder="Leave blank to skip"
+                />
+              </FormGroup>
+              {accountForm.adjustBalance !== '' && (
+                <FormGroup label="As of Date">
+                  <FormInput
+                    type="date"
+                    value={accountForm.adjustDate}
+                    onChange={(e) => setAccountForm((f) => ({ ...f, adjustDate: e.target.value }))}
+                  />
+                </FormGroup>
+              )}
+            </>
           )}
           <div className="flex gap-3 mt-6 justify-end">
             <Button variant="secondary" type="button" onClick={closeAccountModal}>
