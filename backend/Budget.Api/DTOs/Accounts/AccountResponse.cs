@@ -7,6 +7,7 @@ public class AccountResponse
     public required string Color { get; set; }
     public required string AccountType { get; set; }
     public decimal InitialBalance { get; set; }
+    public decimal CurrentBalance { get; set; }
     public bool IsDefault { get; set; }
     public required string CreatedAt { get; set; }
     public required string UpdatedAt { get; set; }

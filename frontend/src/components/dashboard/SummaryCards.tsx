@@ -5,21 +5,6 @@ import { useAppContext } from '../../context/AppContext'
 import { useCurrency } from '../../hooks/useCurrency'
 import { Card, CardLabel, CardValue, CardSub } from '../ui/Card'
 
-function getAccountBalance(
-  accountId: number,
-  initialBalance: number,
-  transactions: ReturnType<typeof useAppContext>['state']['transactions']
-): number {
-  return transactions.reduce((sum, t) => {
-    if (t.status !== 'confirmed') return sum
-    if (t.type === 'income' && t.accountId === accountId) return sum + t.amount
-    if (t.type === 'expense' && t.accountId === accountId) return sum - t.amount
-    if (t.type === 'transfer' && t.accountId === accountId) return sum - t.amount
-    if (t.type === 'transfer' && t.toAccountId === accountId) return sum + t.amount
-    return sum
-  }, initialBalance)
-}
-
 export function SummaryCards() {
   const format = useCurrency()
   const { state, isHydrating } = useAppContext()
@@ -47,10 +32,7 @@ export function SummaryCards() {
   const totalLeft = totalBudget - totalSpent
   const unallocated = month.takeHomePay - totalBudget
 
-  const monthTransactions = state.transactions.filter((t) => t.monthKey <= state.currentMonthKey)
-  const netWorth = state.accounts.reduce((sum, a) => {
-    return sum + getAccountBalance(a.id, a.initialBalance, monthTransactions)
-  }, 0)
+  const netWorth = state.accounts.reduce((sum, a) => sum + (a.currentBalance ?? a.initialBalance), 0)
 
   return (
     <div className="grid grid-cols-4 gap-5 mb-10 max-[900px]:grid-cols-2">

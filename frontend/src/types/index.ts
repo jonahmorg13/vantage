@@ -51,6 +51,7 @@ export interface Account {
   color: string
   accountType: 'checking' | 'savings' | 'brokerage' | '401k' | 'ira' | 'roth_ira' | 'hsa' | 'other'
   initialBalance: number
+  currentBalance?: number
   isDefault?: boolean
   createdAt: string
   updatedAt: string
@@ -78,11 +79,4 @@ export interface AppState {
   recurringTransactions: RecurringTransaction[]
   accounts: Account[]
   currentMonthKey: string
-  nextIds: {
-    category: number
-    categoryTemplate: number
-    transaction: number
-    recurringTransaction: number
-    account: number
-  }
 }

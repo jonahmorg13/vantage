@@ -54,15 +54,8 @@ const defaultAccountForm = (): AccountFormState => ({
   adjustDate: todayISO(),
 })
 
-function getAccountBalance(account: Account, transactions: Transaction[]): number {
-  return transactions.reduce((sum, t) => {
-    if (t.status !== 'confirmed') return sum
-    if (t.type === 'income' && t.accountId === account.id) return sum + t.amount
-    if (t.type === 'expense' && t.accountId === account.id) return sum - t.amount
-    if (t.type === 'transfer' && t.accountId === account.id) return sum - t.amount
-    if (t.type === 'transfer' && t.toAccountId === account.id) return sum + t.amount
-    return sum
-  }, account.initialBalance)
+function getAccountBalance(account: Account, _transactions: Transaction[]): number {
+  return account.currentBalance ?? account.initialBalance
 }
 
 function getAccountActivity(account: Account, transactions: Transaction[]): Transaction[] {

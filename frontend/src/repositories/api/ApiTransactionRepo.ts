@@ -1,7 +1,7 @@
 import type React from 'react'
 import type { AppAction } from '../../context/appReducer'
 import type { ITransactionRepository, TransactionFilters } from '../types'
-import type { Transaction } from '../../types'
+import type { Transaction, Account } from '../../types'
 import type { ApiClient } from './ApiClient'
 
 export class ApiTransactionRepo implements ITransactionRepository {
@@ -11,6 +11,15 @@ export class ApiTransactionRepo implements ITransactionRepository {
   constructor(client: ApiClient, dispatch: React.Dispatch<AppAction>) {
     this.client = client
     this.dispatch = dispatch
+  }
+
+  private async refreshAccounts(): Promise<void> {
+    try {
+      const accounts = await this.client.get<Account[]>('/api/accounts')
+      this.dispatch({ type: 'SET_ACCOUNTS', accounts })
+    } catch {
+      // ignore
+    }
   }
 
   async getAll(filters?: TransactionFilters): Promise<Transaction[]> {
@@ -29,27 +38,32 @@ export class ApiTransactionRepo implements ITransactionRepository {
   async create(data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
     const tx = await this.client.post<Transaction>('/api/transactions', data)
     this.dispatch({ type: 'ADD_TRANSACTION', transaction: tx })
+    await this.refreshAccounts()
     return tx
   }
 
   async update(id: number, data: Partial<Transaction>): Promise<Transaction> {
     const tx = await this.client.put<Transaction>(`/api/transactions/${id}`, data)
     this.dispatch({ type: 'UPDATE_TRANSACTION', id, updates: tx })
+    await this.refreshAccounts()
     return tx
   }
 
   async delete(id: number): Promise<void> {
     await this.client.delete(`/api/transactions/${id}`)
     this.dispatch({ type: 'DELETE_TRANSACTION', id })
+    await this.refreshAccounts()
   }
 
   async confirm(id: number): Promise<void> {
     await this.client.post(`/api/transactions/${id}/confirm`)
     this.dispatch({ type: 'CONFIRM_TRANSACTION', id })
+    await this.refreshAccounts()
   }
 
   async dismiss(id: number): Promise<void> {
     await this.client.delete(`/api/transactions/${id}/dismiss`)
     this.dispatch({ type: 'DISMISS_TRANSACTION', id })
+    await this.refreshAccounts()
   }
 }

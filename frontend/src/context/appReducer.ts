@@ -9,55 +9,32 @@ import type {
 } from '../types'
 import { nowISO } from '../utils/format'
 
-/** Resolve a category template ID to the actual month category ID */
-function resolveCategory(
-  templateId: number | undefined,
-  monthCategories: Category[] | undefined,
-  templates: CategoryTemplate[]
-): number | undefined {
-  if (templateId == null || !monthCategories) return undefined
-  // Try templateId match first (new months)
-  const byTemplate = monthCategories.find((c) => c.templateId === templateId)
-  if (byTemplate) return byTemplate.id
-  // Fallback: match by name for months created before templateId was added
-  const template = templates.find((t) => t.id === templateId)
-  if (template) {
-    const byName = monthCategories.find((c) => c.name === template.name)
-    if (byName) return byName.id
-  }
-  return undefined
-}
-
 export type AppAction =
   | { type: 'SET_MONTH'; monthKey: string }
-  | { type: 'INIT_MONTH'; monthKey: string }
   | { type: 'UPDATE_MONTH_INCOME'; monthKey: string; takeHomePay: number }
   | { type: 'LOCK_MONTH'; monthKey: string }
   // Category actions (per-month)
-  | { type: 'ADD_CATEGORY'; monthKey: string; category: Omit<Category, 'id'> | Category }
+  | { type: 'ADD_CATEGORY'; monthKey: string; category: Category }
   | { type: 'UPDATE_CATEGORY'; monthKey: string; id: number; updates: Partial<Category> }
   | { type: 'DELETE_CATEGORY'; monthKey: string; id: number }
   // Transaction actions
-  | { type: 'ADD_TRANSACTION'; transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'> | Transaction }
+  | { type: 'ADD_TRANSACTION'; transaction: Transaction }
   | { type: 'UPDATE_TRANSACTION'; id: number; updates: Partial<Transaction> }
   | { type: 'DELETE_TRANSACTION'; id: number }
   | { type: 'CONFIRM_TRANSACTION'; id: number }
   | { type: 'DISMISS_TRANSACTION'; id: number }
   // Recurring transaction actions
-  | {
-      type: 'ADD_RECURRING'
-      recurring: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'> | RecurringTransaction
-    }
+  | { type: 'ADD_RECURRING'; recurring: RecurringTransaction }
   | { type: 'UPDATE_RECURRING'; id: number; updates: Partial<RecurringTransaction> }
   | { type: 'DELETE_RECURRING'; id: number }
   // Settings actions
   | { type: 'UPDATE_SETTINGS'; defaultTakeHomePay?: number; currencySymbol?: string }
-  | { type: 'ADD_TEMPLATE'; template: Omit<CategoryTemplate, 'id'> | CategoryTemplate }
+  | { type: 'ADD_TEMPLATE'; template: CategoryTemplate }
   | { type: 'UPDATE_TEMPLATE'; id: number; updates: Partial<CategoryTemplate> }
   | { type: 'DELETE_TEMPLATE'; id: number }
-  | { type: 'REPLACE_TEMPLATES'; templates: (Omit<CategoryTemplate, 'id'> | CategoryTemplate)[] }
+  | { type: 'REPLACE_TEMPLATES'; templates: CategoryTemplate[] }
   // Account actions
-  | { type: 'ADD_ACCOUNT'; account: Omit<Account, 'id' | 'createdAt' | 'updatedAt'> | Account }
+  | { type: 'ADD_ACCOUNT'; account: Account }
   | { type: 'UPDATE_ACCOUNT'; id: number; updates: Partial<Account> }
   | { type: 'DELETE_ACCOUNT'; id: number }
   // Bulk
@@ -67,68 +44,10 @@ export type AppAction =
   | { type: 'SET_RECURRING'; recurringTransactions: RecurringTransaction[] }
   | { type: 'SET_SETTINGS'; settings: AppState['settings'] }
 
-function hasId(obj: unknown): obj is { id: number } {
-  return typeof obj === 'object' && obj !== null && 'id' in obj && typeof (obj as Record<string, unknown>).id === 'number'
-}
-
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_MONTH':
       return { ...state, currentMonthKey: action.monthKey }
-
-    case 'INIT_MONTH': {
-      const existing = state.monthBudgets.find((m) => m.monthKey === action.monthKey)
-      if (existing) return state
-
-      const now = nowISO()
-      const categories: Category[] = state.settings.categoryTemplates.map((t, i) => ({
-        id: state.nextIds.category + i,
-        name: t.name,
-        color: t.color,
-        budgetAmount: t.defaultBudgetAmount,
-        sortOrder: t.sortOrder,
-        templateId: t.id,
-      }))
-
-      const newMonth: MonthBudget = {
-        monthKey: action.monthKey,
-        takeHomePay: state.settings.defaultTakeHomePay,
-        categories,
-        isLocked: false,
-        createdAt: now,
-        updatedAt: now,
-      }
-
-      // Generate pending transactions from recurring
-      const pendingTxs: Transaction[] = state.recurringTransactions
-        .filter((r) => r.isActive)
-        .map((r, i) => ({
-          id: state.nextIds.transaction + i,
-          name: r.name,
-          amount: r.amount,
-          type: r.type,
-          categoryId: resolveCategory(r.categoryId, categories, state.settings.categoryTemplates),
-          accountId: r.accountId,
-          toAccountId: r.toAccountId,
-          date: `${action.monthKey}-${String(r.dayOfMonth).padStart(2, '0')}`,
-          monthKey: action.monthKey,
-          recurringId: r.id,
-          status: 'pending' as const,
-          createdAt: now,
-          updatedAt: now,
-        }))
-
-      return {
-        ...state,
-        monthBudgets: [...state.monthBudgets, newMonth],
-        transactions: [...state.transactions, ...pendingTxs],
-        nextIds: {
-          ...state.nextIds,
-          category: state.nextIds.category + categories.length,
-          transaction: state.nextIds.transaction + pendingTxs.length,
-        },
-      }
-    }
 
     case 'UPDATE_MONTH_INCOME':
       return {
@@ -148,34 +67,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ),
       }
 
-    case 'ADD_CATEGORY': {
-      // If the category already has an id (from API), use it directly
-      if (hasId(action.category)) {
-        const cat = action.category as Category
-        return {
-          ...state,
-          monthBudgets: state.monthBudgets.map((m) =>
-            m.monthKey === action.monthKey
-              ? { ...m, categories: [...m.categories, cat], updatedAt: nowISO() }
-              : m
-          ),
-        }
-      }
-      const newId = state.nextIds.category
+    case 'ADD_CATEGORY':
       return {
         ...state,
         monthBudgets: state.monthBudgets.map((m) =>
           m.monthKey === action.monthKey
-            ? {
-                ...m,
-                categories: [...m.categories, { ...action.category, id: newId }],
-                updatedAt: nowISO(),
-              }
+            ? { ...m, categories: [...m.categories, action.category], updatedAt: nowISO() }
             : m
         ),
-        nextIds: { ...state.nextIds, category: newId + 1 },
       }
-    }
 
     case 'UPDATE_CATEGORY':
       return {
@@ -210,25 +110,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ),
       }
 
-    case 'ADD_TRANSACTION': {
-      // If the transaction already has an id (from API), use it directly
-      if (hasId(action.transaction)) {
-        return {
-          ...state,
-          transactions: [...state.transactions, action.transaction as Transaction],
-        }
-      }
-      const newId = state.nextIds.transaction
-      const now = nowISO()
+    case 'ADD_TRANSACTION':
       return {
         ...state,
-        transactions: [
-          ...state.transactions,
-          { ...action.transaction, id: newId, createdAt: now, updatedAt: now },
-        ],
-        nextIds: { ...state.nextIds, transaction: newId + 1 },
+        transactions: [...state.transactions, action.transaction],
       }
-    }
 
     case 'UPDATE_TRANSACTION':
       return {
@@ -258,55 +144,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         transactions: state.transactions.filter((t) => t.id !== action.id),
       }
 
-    case 'ADD_RECURRING': {
-      // If the recurring already has an id (from API), just cache it
-      if (hasId(action.recurring)) {
-        return {
-          ...state,
-          recurringTransactions: [...state.recurringTransactions, action.recurring as RecurringTransaction],
-        }
-      }
-      const newId = state.nextIds.recurringTransaction
-      const now = nowISO()
-      const newRecurring: RecurringTransaction = {
-        ...action.recurring,
-        id: newId,
-        createdAt: now,
-        updatedAt: now,
-      }
-
-      // If active, generate a pending transaction for the current month immediately
-      const currentMonth = state.monthBudgets.find((m) => m.monthKey === state.currentMonthKey)
-
-      const pendingTx: Transaction | null = newRecurring.isActive
-        ? {
-            id: state.nextIds.transaction,
-            name: newRecurring.name,
-            amount: newRecurring.amount,
-            type: newRecurring.type,
-            categoryId: resolveCategory(newRecurring.categoryId, currentMonth?.categories, state.settings.categoryTemplates),
-            accountId: newRecurring.accountId,
-            toAccountId: newRecurring.toAccountId,
-            date: `${state.currentMonthKey}-${String(newRecurring.dayOfMonth).padStart(2, '0')}`,
-            monthKey: state.currentMonthKey,
-            recurringId: newId,
-            status: 'pending' as const,
-            createdAt: now,
-            updatedAt: now,
-          }
-        : null
-
+    case 'ADD_RECURRING':
       return {
         ...state,
-        recurringTransactions: [...state.recurringTransactions, newRecurring],
-        transactions: pendingTx ? [...state.transactions, pendingTx] : state.transactions,
-        nextIds: {
-          ...state.nextIds,
-          recurringTransaction: newId + 1,
-          transaction: pendingTx ? state.nextIds.transaction + 1 : state.nextIds.transaction,
-        },
+        recurringTransactions: [...state.recurringTransactions, action.recurring],
       }
-    }
 
     case 'UPDATE_RECURRING':
       return {
@@ -334,30 +176,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         },
       }
 
-    case 'ADD_TEMPLATE': {
-      // If the template already has an id (from API), use it directly
-      if (hasId(action.template)) {
-        return {
-          ...state,
-          settings: {
-            ...state.settings,
-            categoryTemplates: [...state.settings.categoryTemplates, action.template as CategoryTemplate],
-          },
-        }
-      }
-      const newId = state.nextIds.categoryTemplate
+    case 'ADD_TEMPLATE':
       return {
         ...state,
         settings: {
           ...state.settings,
-          categoryTemplates: [
-            ...state.settings.categoryTemplates,
-            { ...action.template, id: newId },
-          ],
+          categoryTemplates: [...state.settings.categoryTemplates, action.template],
         },
-        nextIds: { ...state.nextIds, categoryTemplate: newId + 1 },
       }
-    }
 
     case 'UPDATE_TEMPLATE':
       return {
@@ -379,42 +205,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         },
       }
 
-    case 'REPLACE_TEMPLATES': {
-      // If templates have ids (from API), use them directly
-      if (action.templates.length > 0 && hasId(action.templates[0]!)) {
-        return {
-          ...state,
-          settings: { ...state.settings, categoryTemplates: action.templates as CategoryTemplate[] },
-        }
-      }
-      const startId = state.nextIds.categoryTemplate
-      const newTemplates = action.templates.map((t, i) => ({ ...t, id: startId + i }))
+    case 'REPLACE_TEMPLATES':
       return {
         ...state,
-        settings: { ...state.settings, categoryTemplates: newTemplates },
-        nextIds: { ...state.nextIds, categoryTemplate: startId + newTemplates.length },
+        settings: { ...state.settings, categoryTemplates: action.templates },
       }
-    }
 
-    case 'ADD_ACCOUNT': {
-      // If the account already has an id (from API), use it directly
-      if (hasId(action.account)) {
-        return {
-          ...state,
-          accounts: [...state.accounts, action.account as Account],
-        }
-      }
-      const newId = state.nextIds.account
-      const now = nowISO()
+    case 'ADD_ACCOUNT':
       return {
         ...state,
-        accounts: [
-          ...state.accounts,
-          { ...action.account, id: newId, createdAt: now, updatedAt: now },
-        ],
-        nextIds: { ...state.nextIds, account: newId + 1 },
+        accounts: [...state.accounts, action.account],
       }
-    }
 
     case 'UPDATE_ACCOUNT':
       return {

@@ -16,11 +16,13 @@ public class AccountService : IAccountService
 
     public async Task<List<AccountResponse>> GetAllAsync(string userId)
     {
-        return await _db.Accounts
+        var accounts = await _db.Accounts
             .Where(a => a.UserId == userId)
             .OrderBy(a => a.Name)
-            .Select(a => ToResponse(a))
             .ToListAsync();
+
+        var balances = await ComputeBalancesAsync(userId);
+        return accounts.Select(a => ToResponse(a, balances.GetValueOrDefault(a.Id, a.InitialBalance))).ToList();
     }
 
     public async Task<AccountResponse> CreateAsync(string userId, CreateAccountRequest request)
@@ -40,7 +42,7 @@ public class AccountService : IAccountService
         _db.Accounts.Add(account);
         await _db.SaveChangesAsync();
 
-        return ToResponse(account);
+        return ToResponse(account, await ComputeBalanceAsync(userId, account));
     }
 
     public async Task<AccountResponse?> UpdateAsync(string userId, int id, UpdateAccountRequest request)
@@ -56,7 +58,44 @@ public class AccountService : IAccountService
         account.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
-        return ToResponse(account);
+        return ToResponse(account, await ComputeBalanceAsync(userId, account));
+    }
+
+    private async Task<Dictionary<int, decimal>> ComputeBalancesAsync(string userId)
+    {
+        var accounts = await _db.Accounts
+            .Where(a => a.UserId == userId)
+            .Select(a => new { a.Id, a.InitialBalance })
+            .ToListAsync();
+
+        var balances = accounts.ToDictionary(a => a.Id, a => a.InitialBalance);
+
+        var txs = await _db.Transactions
+            .Where(t => t.UserId == userId && t.Status == "confirmed")
+            .Select(t => new { t.Type, t.Amount, t.AccountId, t.ToAccountId })
+            .ToListAsync();
+
+        foreach (var t in txs)
+        {
+            if (t.AccountId.HasValue && balances.ContainsKey(t.AccountId.Value))
+            {
+                if (t.Type == "income") balances[t.AccountId.Value] += t.Amount;
+                else if (t.Type == "expense") balances[t.AccountId.Value] -= t.Amount;
+                else if (t.Type == "transfer") balances[t.AccountId.Value] -= t.Amount;
+            }
+            if (t.Type == "transfer" && t.ToAccountId.HasValue && balances.ContainsKey(t.ToAccountId.Value))
+            {
+                balances[t.ToAccountId.Value] += t.Amount;
+            }
+        }
+
+        return balances;
+    }
+
+    private async Task<decimal> ComputeBalanceAsync(string userId, Account account)
+    {
+        var balances = await ComputeBalancesAsync(userId);
+        return balances.GetValueOrDefault(account.Id, account.InitialBalance);
     }
 
     public async Task<bool> DeleteAsync(string userId, int id)
@@ -69,13 +108,14 @@ public class AccountService : IAccountService
         return true;
     }
 
-    private static AccountResponse ToResponse(Account a) => new()
+    private static AccountResponse ToResponse(Account a, decimal currentBalance) => new()
     {
         Id = a.Id,
         Name = a.Name,
         Color = a.Color,
         AccountType = a.AccountType,
         InitialBalance = a.InitialBalance,
+        CurrentBalance = currentBalance,
         IsDefault = a.IsDefault,
         CreatedAt = a.CreatedAt.ToString("o"),
         UpdatedAt = a.UpdatedAt.ToString("o")

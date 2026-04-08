@@ -6,8 +6,6 @@ import type { Repositories } from './types'
 import type { AppAction } from '../context/appReducer'
 import type { Account, RecurringTransaction, Transaction, MonthBudget } from '../types'
 
-const isApiMode = (import.meta.env.VITE_DATA_SOURCE ?? 'api') !== 'local'
-
 const RepositoryContext = createContext<Repositories | null>(null)
 
 /**
@@ -18,7 +16,7 @@ function DataHydrator({ repos, dispatch }: { repos: Repositories; dispatch: Reac
   const { state } = useAppContext()
   const hydratedRef = useRef(false)
   const initingMonthsRef = useRef<Set<string>>(new Set())
-  const client = repos.apiClient!
+  const client = repos.apiClient
 
   // On mount: fetch settings, accounts, recurring from API
   useEffect(() => {
@@ -85,7 +83,7 @@ export function RepositoryProvider({ children }: { children: ReactNode }) {
 
   return (
     <RepositoryContext.Provider value={repos}>
-      {isApiMode && user && <DataHydrator repos={repos} dispatch={dispatch} />}
+      {user && <DataHydrator repos={repos} dispatch={dispatch} />}
       {children}
     </RepositoryContext.Provider>
   )
